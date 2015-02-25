@@ -56,7 +56,7 @@ class TCPClient
       // Create an inputstream (convenient data reader) to this host
       BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-      outToServer.writeBytes("HEAD " + path + "HTTP/" + httpversion + "\r\n\r\n");
+      outToServer.writeBytes("HEAD " + path + " HTTP/" + httpversion + "\r\n\r\n");
 
       // Read text from the server and write it to the screen.
       String response = "";
