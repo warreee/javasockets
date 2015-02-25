@@ -48,7 +48,7 @@ class TCPClient
       URI uriObject = new URI(uri);
       String path = uriObject.getPath();
       String host = uriObject.getHost();
-      Socket clientSocket = new Socket(uri, port);
+      Socket clientSocket = new Socket(host, port);
 
       // Create outputstream (convenient data writer) to this host.
       DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
@@ -56,7 +56,7 @@ class TCPClient
       // Create an inputstream (convenient data reader) to this host
       BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-      outToServer.writeBytes("HEAD /index.html HTTP/1.0 \r\n\r\n");
+      outToServer.writeBytes("HEAD " + path + "HTTP/" + httpversion + "\r\n\r\n");
 
       // Read text from the server and write it to the screen.
       String response = "";
