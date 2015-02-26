@@ -1,26 +1,34 @@
-// Import necessary IO and NETwork libraries
-import com.sun.xml.internal.bind.v2.TODO;
-
 import java.io.*;
 import java.net.*;
 
 /*
- * A simple example TCP Client application
+ * A simple HTTP Client application
  *
  * Computer Networks, KU Leuven.
  *
  * Arne De Brabandere
  * Ward Schodts
  */
-class TCPClient
-  {
+class HTTPClient {
 
-  public static void main(String[] args) throws Exception
-    {
+  public static void main(String[] args) throws Exception {
+    if (args.length != 4)
+      printHelp();
+    URI uri = getURI(args[1]);
+    parseCommand(args);
+  }
 
-        parseCommand(args);
+  /**
+   * Print the description of how to specify the arguments.
+   */
+  public static void printHelp() {
+    System.out.println("Description of arguments..."); // TODO
+  }
 
-    } // End of main method
+  private static URI getURI(String uriString) throws Exception {
+    // TODO nakijken of er http:// voostaat of niet
+    return new URI(uriString);
+  }
 
   private static void parseCommand(String[] args) throws Exception {
 
@@ -36,13 +44,6 @@ class TCPClient
     }
   }
 
-      /**
-       * TODO nakijken of er http:// voostaat of niet
-       * @param uri
-       * @param stringPort
-       * @param httpversion
-       * @throws Exception
-       */
   private static void head(String uri, String stringPort, String httpversion) throws Exception {
       int port = Integer.parseInt(stringPort);
       URI uriObject = new URI(uri);
@@ -72,4 +73,4 @@ class TCPClient
   }
 
 
-  } // End of class TCPClient
+  } // End of class HTTPClient
