@@ -22,7 +22,8 @@ class HTTPClient {
    * Print the description of how to specify the arguments.
    */
   public static void printHelp() {
-    System.out.println("Description of arguments..."); // TODO
+
+      System.out.println("Description of arguments..."); // TODO
   }
 
   private static URI getURI(String uriString) throws Exception {
