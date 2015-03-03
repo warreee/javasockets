@@ -49,7 +49,11 @@ class HTTPClient {
     */
     public static void printHelp() {
         // TODO
-        System.out.println("Description of arguments...");
+        System.out.println("The argument that you entered were wrong:");
+        System.out.println("HEAD url(starting with or without http) port(usuallly 80) httpversion(1.0 or 1.1)");
+        System.out.println("GET url port httpversion");
+        System.out.println("PUT url port httpversion");
+        System.out.println("POST url port httpversion");
     }
 
     /**
