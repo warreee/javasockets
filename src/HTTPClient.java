@@ -57,8 +57,9 @@ class HTTPClient {
     * @param uriString String value of the given URI
     */
     private static URI getURI(String uriString) throws Exception {
-        if (! uriString.startsWith("http://") || ! uriString.startsWith("https://"));
+        if (! uriString.startsWith("http://") && ! uriString.startsWith("https://")) {
             uriString = "http://" + uriString;
+        }
         return new URI(uriString);
     }
 
