@@ -3,6 +3,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
 * A simple HTTP Client application
@@ -102,15 +104,15 @@ class HTTPClient {
                 case "HEAD":
                     head(inFromServer, outToServer, path, host, version);
                     break;
-                /*case "GET":
+                case "GET":
                     get(inFromServer, outToServer, path, host, version);
                     break;
-                case "PUT":
-                    put(inFromServer, outToServer, path, host, version);
+                /*case "PUT":
+                    put(inFromServer, outToServer, path, host, version);*/
                     break;
                 case "POST":
                     post(inFromServer, outToServer, path, host, version);
-                    break;*/
+                    break;
             }
         }
         catch (Exception e) {
@@ -138,6 +140,39 @@ class HTTPClient {
             System.out.println(response);
             // write response to log file
             logFile.addLine(response);
+        }
+    }
+
+    private static void get(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
+        // Send HTTP command to server.
+        if(version.equals(1.0)) {
+            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
+        } else {
+            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
+                    "HOST: " + host + "\r\n\r\n");
+        }
+        logFile.addLine("\n" + "Response:" + "\n");
+
+        // Read text from the server
+        String response = "";
+        String outputString = "";
+        while ((response = inFromServer.readLine()) != null) {
+            // print response to screen
+            System.out.println(response);
+            // write response to log file
+            logFile.addLine(response);
+            // add line to output in outputString
+            outputString += response;
+        }
+
+        // Find URI's of embedded objects
+
+        String pattern = "src=\"(.*?)\"";
+        Pattern r = Pattern.compile(pattern);
+
+        Matcher m = r.matcher(outputString);
+        while (m.find( )) {
+            System.out.println("Found embedded object: " + m.group(1));
         }
     }
 
