@@ -122,8 +122,12 @@ class HTTPClient {
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
         // Send HTTP command to server.
-        outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n\r\n");
-
+        if(version.equals(1.0)) {
+            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n\r\n");
+        } else {
+            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
+                                    "HOST: " + host + "\r\n\r\n");
+        }
         logFile.addLine("\n" + "Response:" + "\n");
 
         // Read text from the server and write it to the screen.
