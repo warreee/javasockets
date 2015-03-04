@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -205,24 +202,41 @@ class HTTPClient {
 
     ///////////////////////////////////////////////////POST////////////////////////////////////////////////////////////
 
-    private static void post(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
-        // Send HTTP command to server.
-        if(version.equals(1.0)) {
-            outToServer.writeBytes("POST " + path + " HTTP/" + version + "\r\n\r\n");
-            outToServer.writeBytes("POST " + path + " HTTP/" + version + "\r\n\r\n");
-        } else { // not yet implemented
-            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
-                    "HOST: " + host + "\r\n\r\n");
-        }
-        logFile.addLine("\n" + "Response:" + "\n");
 
-        // Read text from the server
-        String response = "";
-        while ((response = inFromServer.readLine()) != null) {
-            // print response to screen
-            System.out.println(response);
-            // write response to log file
-            logFile.addLine(response);
-        }
+
+
+    private static void post(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
+
+
+
+                // Send HTTP command to server.
+                if (version.equals("1.0")) {
+                    outToServer.writeBytes("POST " + path + "HTTP/" + version + "\r\n");
+                    logFile.addLine("POST " + path + " HTTP/" + version + "\r\n");
+                    outToServer.writeBytes("Host: " + host + "\r\n");
+                    logFile.addLine("Host: " + host + "\r\n");
+                    outToServer.writeBytes("Content-Type: multipart/form-data" + "\r\n");
+                    logFile.addLine("Content-Type: multipart/form-data" + "\r\n");
+                    outToServer.writeBytes("Content-Length: 11" +  "\r\n");
+                    logFile.addLine("Content-Length: 9" + "\r\n");
+                    outToServer.writeBytes("\r\n");
+                    logFile.addLine("\r\n");
+                    outToServer.writeBytes("name=test");
+                    logFile.addLine("name=test");
+                } else { // not yet implemented
+                    outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
+                            "HOST: " + host + "\r\n\r\n");
+                }
+                logFile.addLine("\n" + "Response:" + "\n");
+
+                // Read text from the server
+                String response;
+                while ((response = inFromServer.readLine()) != null) {
+                    // print response to screen
+                    System.out.println(response);
+                    // write response to log file
+                    logFile.addLine(response);
+                }
+            }
+
     }
-}
