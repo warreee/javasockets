@@ -4,8 +4,8 @@
 public class HTTPClientPostTest {
 
     public static void main(String[] args) {
-        String[] args2 = {"HEAD", "http://www.google.be/index.html", "80", "1.0"}; // waarom krijgen we hier toch 302 voor terug?
-        String[] args3 = {"HEAD", "http://www.google.com/index.html", "80", "1.0"};
+        String[] args1 = {"POST", "http://www.keramiek.warreee.be/welcome.php", "80", "1.0"};
+        String[] args2 = {"POST", "http://www.tweakers.net/zoeken", "80", "1.0"};
         String[] args4 = {"HEAD", "http://www.fonafix.be/index.php", "80", "1.0"};
         // 1.1
         String[] args5 = {"HEAD", "http://www.fonafix.be/index.php", "80", "1.1"}; // waarom krijgen we hier 301?
@@ -15,7 +15,8 @@ public class HTTPClientPostTest {
         String[] args9 = {"GET", "http://fonafix.be/", "80", "1.0"};
         try {
 
-            HTTPClient.main(args9);
+            HTTPClient.main(args1);
+            //HTTPClient.main(args2);
         } catch (Exception e) {
             e.printStackTrace();
         }
