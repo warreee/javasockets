@@ -108,8 +108,8 @@ class HTTPClient {
                     get(inFromServer, outToServer, path, host, version);
                     break;
                 /*case "PUT":
-                    put(inFromServer, outToServer, path, host, version);*/
-                    break;
+                    put(inFromServer, outToServer, path, host, version);
+                    break;*/
                 case "POST":
                     post(inFromServer, outToServer, path, host, version);
                     break;
