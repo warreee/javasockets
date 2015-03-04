@@ -168,4 +168,25 @@ class HTTPClient {
         return true;
     }
 
+    ///////////////////////////////////////////////////POST////////////////////////////////////////////////////////////
+
+    private static void post(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
+        // Send HTTP command to server.
+        if(version.equals(1.0)) {
+            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n\r\n");
+        } else {
+            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
+                    "HOST: " + host + "\r\n\r\n");
+        }
+        logFile.addLine("\n" + "Response:" + "\n");
+
+        // Read text from the server
+        String response = "";
+        while ((response = inFromServer.readLine()) != null) {
+            // print response to screen
+            System.out.println(response);
+            // write response to log file
+            logFile.addLine(response);
+        }
+    }
 }
