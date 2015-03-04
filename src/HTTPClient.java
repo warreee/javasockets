@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,7 +97,7 @@ class HTTPClient {
         // Create an inputstream (convenient data reader) to this host
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        ArrayList<String> uris;
+        ArrayList<String> uris = new ArrayList<>();
 
         // Parse command.
         try {
@@ -126,8 +127,22 @@ class HTTPClient {
         // If command is GET and http version is 1.0, then get the embedded objects AFTER the socket was closed
         // (if http version 1.1 was used, the embedded objects are requested inside the get() method)
         if (command.equals("GET") && version.equals("1.0")) {
-            // get uris (get2)
-            // TODO
+            for (String uriString : uris) {
+
+
+
+                /** nieuwe connectie maken! */
+
+
+                String outDir = "testing/"; // TODO: output dir instellen (rekening houden met relatieve URI's)
+                URI uriObject = new URI(uriString); // TODO: idem (!!)
+                String path2 = uriObject.getPath();
+                String host2 = uriObject.getHost();
+                getSave(inFromServer, outToServer, path2, host2, version, outDir);
+
+                /** en weer sluiten */
+
+            }
         }
     }
 
@@ -182,14 +197,20 @@ class HTTPClient {
         Matcher m = r.matcher(outputString);
         while (m.find( )) {
 
+            String uri = m.group(1);
+
             // if http 1.0 was used, just add the src uri to uris
             if (version.equals("1.0")) {
-                uris.add(m.group(1));
+                uris.add(uri);
             }
 
-            // if http 1.1 was used, then get the file save it
+            // if http 1.1 was used, then get the file and save it
             else {
-                // TODO
+                String outDir = "testing/"; // TODO: output dir instellen (rekening houden met relatieve URI's)
+                URI uriObject = new URI(uri); // TODO: idem (!!)
+                String path2 = uriObject.getPath();
+                String host2 = uriObject.getHost();
+                getSave(inFromServer, outToServer, path2, host2, version, outDir);
             }
 
 
@@ -197,7 +218,7 @@ class HTTPClient {
         return uris;
     }
 
-    public void get2(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
+    public static void getSave(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version, String outDir) throws Exception {
         // Send HTTP command to server.
         if(version.equals("1.0")) {
             outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
@@ -213,9 +234,22 @@ class HTTPClient {
             // add line to output in outputString
             outputString += response;
         }
+        // TODO: eerste deel van outputString weglaten (todat de inhoud van het eigenlijke bestand begint)
 
-        File out = new File("out/" + host + path); // TODO
+        String outputDir = "out/" + outDir;
+        String outputPath = outputDir + "test.txt"; // TODO: juiste bestandsnaam
+        File file = new File(outputDir);
+        file.mkdirs();
+        try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, true)));
+            out.println(outputString);
+            out.close();
+        } catch(Exception e) {
+            System.out.println("Could not write file (out/" + outDir + "test.txt)");
+        }
     }
+
+
 
     /**
      * Check if the arguments are valid.
