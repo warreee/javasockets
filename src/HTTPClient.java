@@ -1,4 +1,7 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.*;
 
 /*
@@ -37,7 +40,7 @@ class HTTPClient {
             // get port int
             int port = Integer.parseInt(portString);
 
-            parseCommand(command, uri, port, version);
+            executeCommand(command, uri, port, version);
 
             // add separator to log file
             logFile.addLine("--------------------------------------------------------------------------------------");
@@ -68,42 +71,14 @@ class HTTPClient {
     }
 
     /**
-    * Parse the command.
+    * Execute the command.
     * @param command command string
     * @param uri URI object
     * @param port port number
     * @param version http version (1.0 or 1.1)
     */
-    private static void parseCommand(String command, URI uri, int port, String version) {
-        try {
-            switch (command) {
-                case "HEAD":
-                    head(uri, port, version);
-                    break;
-                /*case "GET":
-                    get(uri, port, version);
-                    break;
-                case "PUT":
-                    put(uri, port, version);
-                    break;
-                case "POST":
-                    post(uri, port, version);
-                    break;*/
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private static void executeCommand(String command, URI uri, int port, String version) throws Exception {
 
-    /**
-    * Command: HEAD (uri) (port) (version)
-    * @param uri URI object
-    * @param port port number
-    * @param version http version (1.0 or 1.1)
-    * @throws Exception
-    */
-    private static void head(URI uri, int port, String version) throws Exception {
         String path = uri.getPath(); // path to file
         String host = uri.getHost();
 
@@ -121,6 +96,32 @@ class HTTPClient {
         // Create an inputstream (convenient data reader) to this host
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
+        // Parse command.
+        try {
+            switch (command) {
+                case "HEAD":
+                    head(inFromServer, outToServer, path, host, version);
+                    break;
+                /*case "GET":
+                    get(inFromServer, outToServer, path, host, version);
+                    break;
+                case "PUT":
+                    put(inFromServer, outToServer, path, host, version);
+                    break;
+                case "POST":
+                    post(inFromServer, outToServer, path, host, version);
+                    break;*/
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Close the socket.
+        clientSocket.close();
+    }
+
+    private static void head(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
         // Send HTTP command to server.
         if(version.equals(1.0)) {
             outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n\r\n");
@@ -130,7 +131,7 @@ class HTTPClient {
         }
         logFile.addLine("\n" + "Response:" + "\n");
 
-        // Read text from the server and write it to the screen.
+        // Read text from the server
         String response = "";
         while ((response = inFromServer.readLine()) != null) {
             // print response to screen
@@ -138,9 +139,6 @@ class HTTPClient {
             // write response to log file
             logFile.addLine(response);
         }
-
-        // Close the socket.
-        clientSocket.close();
     }
 
     /**
