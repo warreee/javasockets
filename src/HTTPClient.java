@@ -129,22 +129,35 @@ class HTTPClient {
         if (command.equals("GET") && version.equals("1.0")) {
             for (String uriString : uris) {
 
-
-
-                /** nieuwe connectie maken! */
-
-
                 String outDir = "testing/"; // TODO: output dir instellen (rekening houden met relatieve URI's)
                 URI uriObject = new URI(uriString); // TODO: idem (!!)
-                String path2 = uriObject.getPath();
+                String path2 = uriObject.getPath(); // path to file
                 String host2 = uriObject.getHost();
+
+                // Connect to the host.
+                try {
+                    clientSocket = new Socket(host2, 80); // TODO: port van nieuwe connectie?
+                } catch (IOException e) {
+                    System.out.println("Unable to connect to " + host2 + ":" + 80);
+                }
+
+                // Create outputstream (convenient data writer) to this host.
+                outToServer = new DataOutputStream(clientSocket.getOutputStream());
+
+                // Create an inputstream (convenient data reader) to this host
+                inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+                // Get the file and save it
                 getSave(inFromServer, outToServer, path2, host2, version, outDir);
 
-                /** en weer sluiten */
+                // Close the socket.
+                clientSocket.close();
 
             }
         }
     }
+
+    ///////////////////////////////////////////////////HEAD////////////////////////////////////////////////////////////
 
     private static void head(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
         // Send HTTP command to server.
@@ -166,14 +179,23 @@ class HTTPClient {
         }
     }
 
+    ///////////////////////////////////////////////////GET////////////////////////////////////////////////////////////
+
+    /**
+     * GET request
+     * @param inFromServer
+     * @param outToServer
+     * @param path
+     * @param host
+     * @param version
+     * @return
+     * @throws Exception
+     */
     private static ArrayList<String> get(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
-        // Send HTTP command to server.
-        if(version.equals("1.0")) {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
-        } else {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
+        // Send HTTP GET command to server.
+        outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
                     "HOST: " + host + "\r\n\r\n");
-        }
+
         logFile.addLine("\n" + "Response:" + "\n");
 
         // Read text from the server
@@ -206,10 +228,9 @@ class HTTPClient {
 
             // if http 1.1 was used, then get the file and save it
             else {
-                String outDir = "testing/"; // TODO: output dir instellen (rekening houden met relatieve URI's)
-                URI uriObject = new URI(uri); // TODO: idem (!!)
-                String path2 = uriObject.getPath();
-                String host2 = uriObject.getHost();
+                String host2 = getHost2(host, path, uri);
+                String path2 = getPath2(path, uri);
+                String outDir = host2 + path2.substring(0,path2.lastIndexOf("/")+1);
                 getSave(inFromServer, outToServer, path2, host2, version, outDir);
             }
 
@@ -218,14 +239,38 @@ class HTTPClient {
         return uris;
     }
 
+    private static String getHost2(String host, String path, String uri) throws Exception {
+        if (uri.startsWith("http://") || uri.startsWith("https://")) {
+            URI uriObject = new URI(uri);
+            return uriObject.getHost();
+        }
+        else if (uri.startsWith("//")) {
+            URI uriObject = new URI("http:"+uri);
+            return uriObject.getHost();
+        }
+
+        String currentDir = path.substring(0,path.lastIndexOf("/"));
+        return host;
+    }
+
+    private static String getPath2(String path, String uri) throws Exception {
+        if (uri.startsWith("http://") || uri.startsWith("https://")) {
+            URI uriObject = new URI(uri);
+            return uriObject.getPath();
+        }
+        else if (uri.startsWith("//")) {
+            URI uriObject = new URI("http:"+uri);
+            return uriObject.getPath();
+        }
+
+        String currentDir = path.substring(0,path.lastIndexOf("/"));
+        return currentDir + uri;
+    }
+
     public static void getSave(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version, String outDir) throws Exception {
         // Send HTTP command to server.
-        if(version.equals("1.0")) {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
-        } else {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
-                    "HOST: " + host + "\r\n\r\n");
-        }
+        outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
+                "HOST: " + host + "\r\n\r\n");
 
         // Read text from the server
         String response = "";
@@ -241,11 +286,10 @@ class HTTPClient {
         File file = new File(outputDir);
         file.mkdirs();
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, true)));
-            out.println(outputString);
-            out.close();
+            FileOutputStream stream = new FileOutputStream(file, false);
+            stream.close();
         } catch(Exception e) {
-            System.out.println("Could not write file (out/" + outDir + "test.txt)");
+            System.out.println("Could not write file ("+outputPath+")");
         }
     }
 
