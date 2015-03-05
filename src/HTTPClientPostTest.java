@@ -4,7 +4,7 @@
 public class HTTPClientPostTest {
 
     public static void main(String[] args) {
-        String[] args1 = {"POST", "http://www.keramiek.warreee.be/welcome.php", "80", "1.0"};
+        String[] args1 = {"POST", "http://localhost/welcome.php", "80", "1.0"};
         String[] args2 = {"POST", "http://www.tweakers.net/zoeken", "80", "1.0"};
         String[] args4 = {"HEAD", "http://www.fonafix.be/index.php", "80", "1.0"};
         // 1.1

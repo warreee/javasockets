@@ -289,18 +289,21 @@ class HTTPClient {
 
                 // Send HTTP command to server.
                 if (version.equals("1.0")) {
-                    outToServer.writeBytes("POST " + path + "HTTP/" + version + "\r\n");
                     logFile.addLine("POST " + path + " HTTP/" + version + "\r\n");
+                    System.out.println("POST " + path + " HTTP/" + version + "\r\n");
+                    outToServer.writeBytes("POST " + path + " HTTP/" + version + "\r\n");
+                    logFile.addLine("POST " + path + "HTTP/" + version + "\r\n");
                     outToServer.writeBytes("Host: " + host + "\r\n");
                     logFile.addLine("Host: " + host + "\r\n");
-                    outToServer.writeBytes("Content-Type: multipart/form-data" + "\r\n");
+                    outToServer.writeBytes("Content-Type: application/x-www-form-urlencoded" + "\r\n");
                     logFile.addLine("Content-Type: multipart/form-data" + "\r\n");
-                    outToServer.writeBytes("Content-Length: 11" +  "\r\n");
-                    logFile.addLine("Content-Length: 9" + "\r\n");
+                    outToServer.writeBytes("Content-Length: 22" + "\r\n");
+                    logFile.addLine("Content-Length: 100" + "\r\n");
                     outToServer.writeBytes("\r\n");
                     logFile.addLine("\r\n");
-                    outToServer.writeBytes("name=test");
-                    logFile.addLine("name=test");
+                    outToServer.writeBytes("name6=testqsd" + "\r\n");
+                    outToServer.writeBytes("name1=testqsd" + "\r\n\r\n");
+                    logFile.addLine("name=test&bla=bla");
                 } else { // not yet implemented
                     outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
                             "HOST: " + host + "\r\n\r\n");
