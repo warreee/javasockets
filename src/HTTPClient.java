@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -198,24 +199,26 @@ class HTTPClient {
 
         logFile.addLine("\n" + "Response:" + "\n");
 
-        // list of uris of embedded objects
-        ArrayList<String> uris = new ArrayList<>();
-
         // Read text from the server
         String response = "";
-        String outputString = "";
+        String[] output = new String[0];
         while ((response = inFromServer.readLine()) != null) {
             // print response to screen
             System.out.println(response);
             // write response to log file
             logFile.addLine(response);
             // add line to output in outputString
-            outputString += response;
-            // find embedded objects and add to uris
-            String pattern = "src=\"(.*?)\"";
-            Pattern r = Pattern.compile(pattern);
-            Matcher m = r.matcher(outputString);
-            while (m.find( )) {
+            output = Arrays.copyOf(output, output.length+1);
+            output[output.length-1] = response;
+        }
+
+        // find embedded objects and add to uris
+        ArrayList<String> uris = new ArrayList<>();
+        String pattern = "src=\"(.*?)\"";
+        Pattern r = Pattern.compile(pattern);
+        for (String outputLine : output) {
+            Matcher m = r.matcher(outputLine);
+            while (m.find()) {
                 String uri = m.group(1);
                 uris.add(uri);
             }
@@ -223,7 +226,6 @@ class HTTPClient {
 
         // if http 1.1 was used, then get the embedded objects and save them locally
         if (version.equals("1.1")) {
-
             for (String uri : uris) {
                 String host2 = getHost2(host, path, uri);
                 String path2 = getPath2(path, uri);
@@ -287,12 +289,15 @@ class HTTPClient {
         File file = new File(outputDir);
         file.mkdirs();
         file.createNewFile();
+
+        // TODO: files maken + inhoud schrijven
         /*try {
             FileOutputStream stream = new FileOutputStream(file, false);
             stream.close();
         } catch(Exception e) {
             System.out.println("Could not write file ("+outputPath+")");
         }*/
+
     }
 
 
