@@ -15,7 +15,7 @@ public class HTTPClientTest {
         String[] args7 = {"HEAD", "http://www.google.com/index.html", "80", "1.1"}; // werkt nog niet
         String[] args8 = {"HEAD", "http://people.cs.kuleuven.be/~bart.demoen/AB/index.html", "80", "1.1"};
         String[] args9 = {"GET", "http://fonafix.be/", "80", "1.1"};
-        String[] args10 = {"GET", "www.google.be/", "80", "1.1"};
+        String[] args10 = {"GET", "www.vkkf.be/index.php", "80", "1.1"};
         try {
             /*HTTPClient.main(args2);
             HTTPClient.main(args3);*/

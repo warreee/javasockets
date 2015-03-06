@@ -198,6 +198,9 @@ class HTTPClient {
 
         logFile.addLine("\n" + "Response:" + "\n");
 
+        // list of uris of embedded objects
+        ArrayList<String> uris = new ArrayList<>();
+
         // Read text from the server
         String response = "";
         String outputString = "";
@@ -208,34 +211,27 @@ class HTTPClient {
             logFile.addLine(response);
             // add line to output in outputString
             outputString += response;
-        }
-
-        // Find URI's of embedded objects
-        ArrayList<String> uris = new ArrayList<>();
-
-        String pattern = "src=\"(.*?)\"";
-        Pattern r = Pattern.compile(pattern);
-
-        Matcher m = r.matcher(outputString);
-        while (m.find( )) {
-
-            String uri = m.group(1);
-
-            // if http 1.0 was used, just add the src uri to uris
-            if (version.equals("1.0")) {
+            // find embedded objects and add to uris
+            String pattern = "src=\"(.*?)\"";
+            Pattern r = Pattern.compile(pattern);
+            Matcher m = r.matcher(outputString);
+            while (m.find( )) {
+                String uri = m.group(1);
                 uris.add(uri);
             }
+        }
 
-            // if http 1.1 was used, then get the file and save it
-            else {
+        // if http 1.1 was used, then get the embedded objects and save them locally
+        if (version.equals("1.1")) {
+
+            for (String uri : uris) {
                 String host2 = getHost2(host, path, uri);
                 String path2 = getPath2(path, uri);
-                String outDir = host2 + path2.substring(0,path2.lastIndexOf("/")+1);
+                String outDir = host2 + path2.substring(0, path2.lastIndexOf("/") + 1);
                 getSave(inFromServer, outToServer, path2, host2, version, outDir);
             }
-
-
         }
+
         return uris;
     }
 
@@ -282,15 +278,21 @@ class HTTPClient {
         // TODO: eerste deel van outputString weglaten (todat de inhoud van het eigenlijke bestand begint)
 
         String outputDir = "out/" + outDir;
-        String outputPath = outputDir + "test.txt"; // TODO: juiste bestandsnaam
+        String fileName;
+        if (path.contains("/"))
+            fileName = path.substring(path.lastIndexOf("/") + 1);
+        else
+            fileName = path;
+        String outputPath = outputDir + fileName;
         File file = new File(outputDir);
         file.mkdirs();
-        try {
+        file.createNewFile();
+        /*try {
             FileOutputStream stream = new FileOutputStream(file, false);
             stream.close();
         } catch(Exception e) {
             System.out.println("Could not write file ("+outputPath+")");
-        }
+        }*/
     }
 
 
