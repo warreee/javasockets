@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 */
 class HTTPClient {
 
-    public static void test() throws IOException {
+    public static void main(String[] args) throws IOException {
 
         String host = "tldp.org";
         String path = "/index.html";
@@ -84,7 +84,7 @@ class HTTPClient {
      */
     public static LogFile logFile = new LogFile("log.txt");
 
-    public static void main(String[] args) throws Exception {
+    public static void main2(String[] args) throws Exception {
 
         // if the arguments are invalid, then print the description of how to specify the program arguments
         if (! validArguments(args)) {
