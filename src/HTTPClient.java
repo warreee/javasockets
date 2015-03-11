@@ -370,5 +370,24 @@ class HTTPClient {
                     logFile.addLine(response);
                 }
             }
+    ///////////////////////////////////////////////////PUT//////////////////////////////////////////////////////////////
 
+    private static void put(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
+
+        outToServer.writeBytes("PUT " + "/put/test" + " HTTP/" + version + "\r\n");
+        outToServer.writeBytes("Host: " + host + "\r\n");
+        outToServer.writeBytes("Content-Type: application/x-www-form-urlencoded" + "\r\n");
+        outToServer.writeBytes("Content-Length: 22" + "\r\n");
+
+
+        String response;
+        while ((response = inFromServer.readLine()) != null) {
+            // print response to screen
+            System.out.println(response);
+            // write response to log file
+            logFile.addLine(response);
+        }
+
+
+    }
     }
