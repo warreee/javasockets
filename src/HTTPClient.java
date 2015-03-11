@@ -16,12 +16,76 @@ import java.util.regex.Pattern;
 */
 class HTTPClient {
 
+    public static void main(String[] args) throws IOException {
+
+        String host = "tldp.org";
+        String path = "/images/flags/t_es.gif";
+        String version = "1.1";
+        int port = 80;
+
+        // Connect to the host.
+        Socket clientSocket = null;
+        try {
+            clientSocket = new Socket(host, port);
+        } catch (IOException e) {
+            System.out.println("Unable to connect to " + host + ":" + port);
+        }
+
+        // Create outputstream (convenient data writer) to this host.
+        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+
+        // Create an inputstream (convenient data reader) to this host
+        DataInputStream inFromServer = new DataInputStream(clientSocket.getInputStream());
+
+        outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
+                "HOST: " + host + "\r\n\r\n");
+
+        Byte responseByte;
+        String line = "";
+        String response = "";
+        int i=0;
+        int nbBytes = Integer.MAX_VALUE;
+        int contentLength = 0;
+        while (i <= nbBytes) {
+
+            responseByte = inFromServer.readByte();
+            byte[] responseBytes = new byte[1];
+            responseBytes[0] = responseByte;
+            String add = new String(responseBytes, "UTF-8");
+            line += add;
+            response += add;
+
+            if (line.endsWith("\r\n")) {
+
+                if (line.startsWith("Content-Length: ")) {
+                    String nb = line.replace("Content-Length: ","").replace("\r\n","");
+                    contentLength = Integer.parseInt(nb);
+                }
+
+                if (line.equals("\r\n")) {
+                    i=0;
+                    nbBytes = contentLength;
+                }
+
+                line = "";
+
+            }
+
+            i++;
+        }
+
+        System.out.println(response);
+
+        clientSocket.close();
+
+    }
+
     /**
      * Log file: log.txt
      */
     public static LogFile logFile = new LogFile("log.txt");
 
-    public static void main(String[] args) throws Exception {
+    public static void main2(String[] args) throws Exception {
 
         // if the arguments are invalid, then print the description of how to specify the program arguments
         if (! validArguments(args)) {
@@ -108,11 +172,11 @@ class HTTPClient {
                     break;
                 case "GET":
                     // als get the returned array of embedded object URI's to request
-                    uris = get(inFromServer, outToServer, path, host, version);
+                    uris = get(inFromServer, outToServer, path, host, version, clientSocket);
                     break;
-                /*case "PUT":
+                case "PUT":
                     put(inFromServer, outToServer, path, host, version);
-                    break;*/
+                    break;
                 case "POST":
                     post(inFromServer, outToServer, path, host, version);
                     break;
@@ -122,6 +186,8 @@ class HTTPClient {
             e.printStackTrace();
         }
 
+        inFromServer.close();
+        outToServer.close();
         // Close the socket.
         clientSocket.close();
 
@@ -130,10 +196,9 @@ class HTTPClient {
         if (command.equals("GET") && version.equals("1.0")) {
             for (String uriString : uris) {
 
-                String outDir = "testing/"; // TODO: output dir instellen (rekening houden met relatieve URI's)
-                URI uriObject = new URI(uriString); // TODO: idem (!!)
-                String path2 = uriObject.getPath(); // path to file
-                String host2 = uriObject.getHost();
+                String host2 = getHost2(host, path, uriString);
+                String path2 = getPath2(path, uriString);
+                String outDir = host2 + path2.substring(0, path2.lastIndexOf("/") + 1);
 
                 // Connect to the host.
                 try {
@@ -149,7 +214,7 @@ class HTTPClient {
                 inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
                 // Get the file and save it
-                getSave(inFromServer, outToServer, path2, host2, version, outDir);
+                getSave(inFromServer, outToServer, path2, host2, version, outDir, clientSocket);
 
                 // Close the socket.
                 clientSocket.close();
@@ -192,10 +257,14 @@ class HTTPClient {
      * @return
      * @throws Exception
      */
-    private static ArrayList<String> get(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
-        // Send HTTP GET command to server.
-        outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
+    private static ArrayList<String> get(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version, Socket socket) throws Exception {
+        // Send HTTP command to server.
+        if(version.equals("1.0")) {
+            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
+        } else {
+            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
                     "HOST: " + host + "\r\n\r\n");
+        }
 
         logFile.addLine("\n" + "Response:" + "\n");
 
@@ -227,10 +296,10 @@ class HTTPClient {
         // if http 1.1 was used, then get the embedded objects and save them locally
         if (version.equals("1.1")) {
             for (String uri : uris) {
-                String host2 = getHost2(host, path, uri);
+                String host2 = getHost2(host, path, uri); // TODO: als dit een andere host is ==> nieuwe connectie maken??
                 String path2 = getPath2(path, uri);
                 String outDir = host2 + path2.substring(0, path2.lastIndexOf("/") + 1);
-                getSave(inFromServer, outToServer, path2, host2, version, outDir);
+                getSave(inFromServer, outToServer, path2, host2, version, outDir, socket);
             }
         }
 
@@ -262,13 +331,21 @@ class HTTPClient {
         }
 
         String currentDir = path.substring(0,path.lastIndexOf("/"));
-        return currentDir + uri;
+        return currentDir + "/" + uri;
     }
 
-    public static void getSave(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version, String outDir) throws Exception {
+    public static void getSave(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version, String outDir, Socket socket) throws Exception {
+        if (socket.isClosed())
+            System.out.println("socket closed...");
+
+
         // Send HTTP command to server.
-        outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
-                "HOST: " + host + "\r\n\r\n");
+        if(version.equals("1.0")) {
+            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
+        } else {
+            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
+                    "HOST: " + host + "\r\n\r\n");
+        }
 
         // Read text from the server
         String response = "";
@@ -286,17 +363,19 @@ class HTTPClient {
         else
             fileName = path;
         String outputPath = outputDir + fileName;
-        File file = new File(outputDir);
-        file.mkdirs();
+
+        // create dirs
+        new File(outputDir).mkdirs();
+
+        // create file
+        File file = new File(outputPath);
         file.createNewFile();
 
-        // TODO: files maken + inhoud schrijven
-        /*try {
-            FileOutputStream stream = new FileOutputStream(file, false);
-            stream.close();
-        } catch(Exception e) {
-            System.out.println("Could not write file ("+outputPath+")");
-        }*/
+        PrintWriter printWriter = new PrintWriter (file);
+        printWriter.print(outputString);
+        printWriter.close();
+
+
 
     }
 

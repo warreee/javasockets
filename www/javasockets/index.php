@@ -1,1 +1,9 @@
-<?php print "php works"; ?>
+<html>
+
+<body>
+
+<img src="lake-bohinj.jpg" />
+
+</body>
+
+</html>
