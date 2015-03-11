@@ -16,10 +16,10 @@ import java.util.regex.Pattern;
 */
 class HTTPClient {
 
-    public static void main(String[] args) throws IOException {
+    public static void test() throws IOException {
 
         String host = "tldp.org";
-        String path = "/images/flags/t_es.gif";
+        String path = "/index.html";
         String version = "1.1";
         int port = 80;
 
@@ -56,13 +56,12 @@ class HTTPClient {
             response += add;
 
             if (line.endsWith("\r\n")) {
-
                 if (line.startsWith("Content-Length: ")) {
                     String nb = line.replace("Content-Length: ","").replace("\r\n","");
                     contentLength = Integer.parseInt(nb);
                 }
 
-                if (line.equals("\r\n")) {
+                if (line.equals("\r\n") && nbBytes == Integer.MAX_VALUE) {
                     i=0;
                     nbBytes = contentLength;
                 }
@@ -85,7 +84,7 @@ class HTTPClient {
      */
     public static LogFile logFile = new LogFile("log.txt");
 
-    public static void main2(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
 
         // if the arguments are invalid, then print the description of how to specify the program arguments
         if (! validArguments(args)) {
