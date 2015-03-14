@@ -10,7 +10,7 @@ import java.net.*;
  * Arne De Brabandere
  * Ward Schodts
  */
-class TCPServer
+class HTTPServer
   {
 
   /*
@@ -43,4 +43,4 @@ class TCPServer
 
     } // End of main method.
 
-  } // End of class TCPServer
+  } // End of class HTTPServer
