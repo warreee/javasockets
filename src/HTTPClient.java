@@ -252,8 +252,10 @@ class HTTPClient {
 
         outToServer.writeBytes("PUT " + "/put/test" + " HTTP/" + version + "\r\n");
         outToServer.writeBytes("Host: " + host + "\r\n");
-        outToServer.writeBytes("Content-Type: application/x-www-form-urlencoded" + "\r\n");
+        outToServer.writeBytes("Content-Type: image/png" + "\r\n");
         outToServer.writeBytes("Content-Length: 22" + "\r\n");
+        outToServer.writeBytes("\r\n");
+        //outToServer.write();
 
 
         String response;
