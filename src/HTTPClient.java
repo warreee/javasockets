@@ -34,7 +34,7 @@ class HTTPClient {
             case "GET":
                 get(host, path, port, http1);
                 break;
-            // TODO
+            // TODO: complete switch when methods
         }
     }
 
@@ -214,38 +214,38 @@ class HTTPClient {
 
 
 
-                // Send HTTP command to server.
-                if (version.equals("1.0")) {
-                    logFile.addLine("POST " + path + " HTTP/" + version + "\r\n");
-                    System.out.println("POST " + path + " HTTP/" + version + "\r\n");
-                    outToServer.writeBytes("POST " + path + " HTTP/" + version + "\r\n");
-                    logFile.addLine("POST " + path + "HTTP/" + version + "\r\n");
-                    outToServer.writeBytes("Host: " + host + "\r\n");
-                    logFile.addLine("Host: " + host + "\r\n");
-                    outToServer.writeBytes("Content-Type: application/x-www-form-urlencoded" + "\r\n");
-                    logFile.addLine("Content-Type: multipart/form-data" + "\r\n");
-                    outToServer.writeBytes("Content-Length: 22" + "\r\n");
-                    logFile.addLine("Content-Length: 100" + "\r\n");
-                    outToServer.writeBytes("\r\n");
-                    logFile.addLine("\r\n");
-                    outToServer.writeBytes("name6=testqsd" + "\r\n");
-                    outToServer.writeBytes("name1=testqsd" + "\r\n\r\n");
-                    logFile.addLine("name=test&bla=bla");
-                } else { // not yet implemented
-                    outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
-                            "HOST: " + host + "\r\n\r\n");
-                }
-                logFile.addLine("\n" + "Response:" + "\n");
+        // Send HTTP command to server.
+        if (version.equals("1.0")) {
+            logFile.addLine("POST " + path + " HTTP/" + version + "\r\n");
+            System.out.println("POST " + path + " HTTP/" + version + "\r\n");
+            outToServer.writeBytes("POST " + path + " HTTP/" + version + "\r\n");
+            logFile.addLine("POST " + path + "HTTP/" + version + "\r\n");
+            outToServer.writeBytes("Host: " + host + "\r\n");
+            logFile.addLine("Host: " + host + "\r\n");
+            outToServer.writeBytes("Content-Type: application/x-www-form-urlencoded" + "\r\n");
+            logFile.addLine("Content-Type: multipart/form-data" + "\r\n");
+            outToServer.writeBytes("Content-Length: 22" + "\r\n");
+            logFile.addLine("Content-Length: 100" + "\r\n");
+            outToServer.writeBytes("\r\n");
+            logFile.addLine("\r\n");
+            outToServer.writeBytes("name6=testqsd" + "\r\n");
+            outToServer.writeBytes("name1=testqsd" + "\r\n\r\n");
+            logFile.addLine("name=test&bla=bla");
+        } else { // not yet implemented
+            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
+                    "HOST: " + host + "\r\n\r\n");
+        }
+        logFile.addLine("\n" + "Response:" + "\n");
 
-                // Read text from the server
-                String response;
-                while ((response = inFromServer.readLine()) != null) {
-                    // print response to screen
-                    System.out.println(response);
-                    // write response to log file
-                    logFile.addLine(response);
-                }
-            }
+        // Read text from the server
+        String response;
+        while ((response = inFromServer.readLine()) != null) {
+            // print response to screen
+            System.out.println(response);
+            // write response to log file
+            logFile.addLine(response);
+        }
+    }
     ///////////////////////////////////////////////////PUT//////////////////////////////////////////////////////////////
 
     private static void put(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
