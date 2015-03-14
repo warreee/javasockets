@@ -3,6 +3,7 @@ import java.net.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,51 +17,86 @@ import java.util.regex.Pattern;
 */
 class HTTPClient {
 
-    public static void main(String[] args) throws IOException {
+    public static LogFile logFile = new LogFile("log.txt");
 
-        String host = "tldp.org";
-        String path = "/index.html";
-        String version = "1.1";
-        int port = 80;
+    /**
+     * Constructor for creating a new HTTP client.
+     * @param command HEAD/GET/PUT/POST
+     * @param uri URI object
+     * @param port Ususally 80
+     * @param http1 True if HTTP 1.1 is used, false if HTTP 1.0 is used
+     */
+    public HTTPClient(String command, URI uri, int port, boolean http1) throws IOException {
+        String path = uri.getPath();
+        String host = uri.getHost();
 
-        // Connect to the host.
-        Socket clientSocket = null;
-        try {
-            clientSocket = new Socket(host, port);
-        } catch (IOException e) {
-            System.out.println("Unable to connect to " + host + ":" + port);
+        switch (command) {
+            case "GET":
+                get(host, path, port, http1);
+                break;
+            // TODO
         }
+    }
 
-        // Create outputstream (convenient data writer) to this host.
+    /**
+     * Send a GET command.
+     */
+    private void get(String host, String path, int port, boolean http1) throws IOException {
+        // connect to host
+        Socket clientSocket = new Socket(host, port);
+        // create outputstream to this host
         DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-
-        // Create an inputstream (convenient data reader) to this host
+        // create an inputstream to this host
         DataInputStream inFromServer = new DataInputStream(clientSocket.getInputStream());
 
-        outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
-                "HOST: " + host + "\r\n\r\n");
+        // get content of requested file
+        List<String> reponse = get(host,path,outToServer,inFromServer,http1);
+    }
+
+    /**
+     * Returns the response of a server after sending a GET request.
+     */
+    private List<String> get(String host, String path, DataOutputStream outputStream, DataInputStream inputStream, boolean http1) throws IOException {
+        if (http1)
+            outputStream.writeBytes("GET " + path + " HTTP/1.1\r\n" +
+                    "HOST: " + host + "\r\n\r\n");
+        else
+            outputStream.writeBytes("GET " + path + " HTTP/1.0\r\n\r\n");
 
         Byte responseByte;
         String line = "";
-        String response = "";
+        ArrayList<String> response = new ArrayList<>();
+
         int i=0;
-        int nbBytes = Integer.MAX_VALUE;
-        int contentLength = 0;
+        int nbBytes = Integer.MAX_VALUE; // start reading until the head part of the response ends
+        int contentLength = 0; // the content length will be set as soon as it is received
+
         while (i <= nbBytes) {
 
-            responseByte = inFromServer.readByte();
+            // read the next byte
+            responseByte = inputStream.readByte();
+
+            // convert byte to string
             byte[] responseBytes = new byte[1];
             responseBytes[0] = responseByte;
             String add = new String(responseBytes, "UTF-8");
+
+            // add string to the current line
             line += add;
-            response += add;
+
+            // add string to the response string
+            response.add(add);
 
             if (line.endsWith("\r\n")) {
+
+                // if the content length was received, save it
                 if (line.startsWith("Content-Length: ")) {
                     String nb = line.replace("Content-Length: ","").replace("\r\n","");
                     contentLength = Integer.parseInt(nb);
                 }
 
+                // when the content of the file starts,
+                // make sure we only read the next [contentLength] bytes
                 if (line.equals("\r\n") && nbBytes == Integer.MAX_VALUE) {
                     i=0;
                     nbBytes = contentLength;
@@ -73,26 +109,29 @@ class HTTPClient {
             i++;
         }
 
-        System.out.println(response);
-
-        clientSocket.close();
-
+        return response;
     }
 
     /**
-     * Log file: log.txt
+     * Get the file content of the reponse of a server.
      */
-    public static LogFile logFile = new LogFile("log.txt");
+    private String getContent(String[] response) {
+        return null;
+    }
 
-    public static void main2(String[] args) throws Exception {
+    private List<URI> getEmbeddedObjects(String content) {
+        return null;
+    }
 
+    //////////////////////////////////////////////////STATIC////////////////////////////////////////////////////////////
+
+    public static void main(String[] args) throws URISyntaxException, IOException {
         // if the arguments are invalid, then print the description of how to specify the program arguments
         if (! validArguments(args)) {
             printHelp();
-        } else {
-            // add command string to log file
-            logFile.addLine("\n" + "Command:" + "\n\n" + args[0] + " " + args[1] + " " + args[2] + " " + args[3]);
+        }
 
+        else {
             // get arguments
             String command = args[0];
             String uriString = args[1];
@@ -105,280 +144,39 @@ class HTTPClient {
             // get port int
             int port = Integer.parseInt(portString);
 
-            executeCommand(command, uri, port, version);
+            boolean http1;
+            if (version.equals("1.1"))
+                http1 = true;
+            else
+                http1 = false;
 
-            // add separator to log file
-            logFile.addLine("--------------------------------------------------------------------------------------");
+            // create new HTTP client
+            HTTPClient client = new HTTPClient(command,uri,port,http1);
         }
     }
 
     /**
-    * Print the description of how to specify the program arguments.
-    */
+     * Print the description of how to specify the program arguments.
+     */
     public static void printHelp() {
-        // TODO
-        System.out.println("The argument that you entered were wrong:");
-        System.out.println("HEAD url(starting with or without http) port(usuallly 80) httpversion(1.0 or 1.1)");
+        System.out.println("The arguments that you entered were wrong.");
+        System.out.println("Use one of these commands:");
+        System.out.println("HEAD url (starting with or without http) port (usuallly 80) httpversion (1.0 or 1.1)");
         System.out.println("GET url port httpversion");
         System.out.println("PUT url port httpversion");
         System.out.println("POST url port httpversion");
     }
 
     /**
-    * Get URI object from given URI string
-    * @param uriString String value of the given URI
-    */
-    private static URI getURI(String uriString) throws Exception {
+     * Get URI object from given URI string
+     * @param uriString String value of the given URI
+     */
+    private static URI getURI(String uriString) throws URISyntaxException {
         if (! uriString.startsWith("http://") && ! uriString.startsWith("https://")) {
             uriString = "http://" + uriString;
         }
         return new URI(uriString);
     }
-
-    /**
-    * Execute the command.
-    * @param command command string
-    * @param uri URI object
-    * @param port port number
-    * @param version http version (1.0 or 1.1)
-    */
-    private static void executeCommand(String command, URI uri, int port, String version) throws Exception {
-
-        String path = uri.getPath(); // path to file
-        String host = uri.getHost();
-
-        // Connect to the host.
-        Socket clientSocket = null;
-        try {
-            clientSocket = new Socket(host, port);
-        } catch (IOException e) {
-            System.out.println("Unable to connect to " + host + ":" + port);
-        }
-
-        // Create outputstream (convenient data writer) to this host.
-        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-
-        // Create an inputstream (convenient data reader) to this host
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-        ArrayList<String> uris = new ArrayList<>();
-
-        // Parse command.
-        try {
-            switch (command) {
-                case "HEAD":
-                    head(inFromServer, outToServer, path, host, version);
-                    break;
-                case "GET":
-                    // als get the returned array of embedded object URI's to request
-                    uris = get(inFromServer, outToServer, path, host, version, clientSocket);
-                    break;
-                case "PUT":
-                    put(inFromServer, outToServer, path, host, version);
-                    break;
-                case "POST":
-                    post(inFromServer, outToServer, path, host, version);
-                    break;
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        inFromServer.close();
-        outToServer.close();
-        // Close the socket.
-        clientSocket.close();
-
-        // If command is GET and http version is 1.0, then get the embedded objects AFTER the socket was closed
-        // (if http version 1.1 was used, the embedded objects are requested inside the get() method)
-        if (command.equals("GET") && version.equals("1.0")) {
-            for (String uriString : uris) {
-
-                String host2 = getHost2(host, path, uriString);
-                String path2 = getPath2(path, uriString);
-                String outDir = host2 + path2.substring(0, path2.lastIndexOf("/") + 1);
-
-                // Connect to the host.
-                try {
-                    clientSocket = new Socket(host2, 80); // TODO: port van nieuwe connectie?
-                } catch (IOException e) {
-                    System.out.println("Unable to connect to " + host2 + ":" + 80);
-                }
-
-                // Create outputstream (convenient data writer) to this host.
-                outToServer = new DataOutputStream(clientSocket.getOutputStream());
-
-                // Create an inputstream (convenient data reader) to this host
-                inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-                // Get the file and save it
-                getSave(inFromServer, outToServer, path2, host2, version, outDir, clientSocket);
-
-                // Close the socket.
-                clientSocket.close();
-
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////HEAD////////////////////////////////////////////////////////////
-
-    private static void head(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
-        // Send HTTP command to server.
-        if(version.equals("1.0")) {
-            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n\r\n");
-        } else {
-            outToServer.writeBytes("HEAD " + path + " HTTP/" + version + "\r\n" +
-                                    "HOST: " + host + "\r\n\r\n");
-        }
-        logFile.addLine("\n" + "Response:" + "\n");
-
-        // Read text from the server
-        String response = "";
-        while ((response = inFromServer.readLine()) != null) {
-            // print response to screen
-            System.out.println(response);
-            // write response to log file
-            logFile.addLine(response);
-        }
-    }
-
-    ///////////////////////////////////////////////////GET////////////////////////////////////////////////////////////
-
-    /**
-     * GET request
-     * @param inFromServer
-     * @param outToServer
-     * @param path
-     * @param host
-     * @param version
-     * @return
-     * @throws Exception
-     */
-    private static ArrayList<String> get(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version, Socket socket) throws Exception {
-        // Send HTTP command to server.
-        if(version.equals("1.0")) {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
-        } else {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
-                    "HOST: " + host + "\r\n\r\n");
-        }
-
-        logFile.addLine("\n" + "Response:" + "\n");
-
-        // Read text from the server
-        String response = "";
-        String[] output = new String[0];
-        while ((response = inFromServer.readLine()) != null) {
-            // print response to screen
-            System.out.println(response);
-            // write response to log file
-            logFile.addLine(response);
-            // add line to output in outputString
-            output = Arrays.copyOf(output, output.length+1);
-            output[output.length-1] = response;
-        }
-
-        // find embedded objects and add to uris
-        ArrayList<String> uris = new ArrayList<>();
-        String pattern = "src=\"(.*?)\"";
-        Pattern r = Pattern.compile(pattern);
-        for (String outputLine : output) {
-            Matcher m = r.matcher(outputLine);
-            while (m.find()) {
-                String uri = m.group(1);
-                uris.add(uri);
-            }
-        }
-
-        // if http 1.1 was used, then get the embedded objects and save them locally
-        if (version.equals("1.1")) {
-            for (String uri : uris) {
-                String host2 = getHost2(host, path, uri); // TODO: als dit een andere host is ==> nieuwe connectie maken??
-                String path2 = getPath2(path, uri);
-                String outDir = host2 + path2.substring(0, path2.lastIndexOf("/") + 1);
-                getSave(inFromServer, outToServer, path2, host2, version, outDir, socket);
-            }
-        }
-
-        return uris;
-    }
-
-    private static String getHost2(String host, String path, String uri) throws Exception {
-        if (uri.startsWith("http://") || uri.startsWith("https://")) {
-            URI uriObject = new URI(uri);
-            return uriObject.getHost();
-        }
-        else if (uri.startsWith("//")) {
-            URI uriObject = new URI("http:"+uri);
-            return uriObject.getHost();
-        }
-
-        String currentDir = path.substring(0,path.lastIndexOf("/"));
-        return host;
-    }
-
-    private static String getPath2(String path, String uri) throws Exception {
-        if (uri.startsWith("http://") || uri.startsWith("https://")) {
-            URI uriObject = new URI(uri);
-            return uriObject.getPath();
-        }
-        else if (uri.startsWith("//")) {
-            URI uriObject = new URI("http:"+uri);
-            return uriObject.getPath();
-        }
-
-        String currentDir = path.substring(0,path.lastIndexOf("/"));
-        return currentDir + "/" + uri;
-    }
-
-    public static void getSave(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version, String outDir, Socket socket) throws Exception {
-        if (socket.isClosed())
-            System.out.println("socket closed...");
-
-
-        // Send HTTP command to server.
-        if(version.equals("1.0")) {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n\r\n");
-        } else {
-            outToServer.writeBytes("GET " + path + " HTTP/" + version + "\r\n" +
-                    "HOST: " + host + "\r\n\r\n");
-        }
-
-        // Read text from the server
-        String response = "";
-        String outputString = "";
-        while ((response = inFromServer.readLine()) != null) {
-            // add line to output in outputString
-            outputString += response;
-        }
-        // TODO: eerste deel van outputString weglaten (todat de inhoud van het eigenlijke bestand begint)
-
-        String outputDir = "out/" + outDir;
-        String fileName;
-        if (path.contains("/"))
-            fileName = path.substring(path.lastIndexOf("/") + 1);
-        else
-            fileName = path;
-        String outputPath = outputDir + fileName;
-
-        // create dirs
-        new File(outputDir).mkdirs();
-
-        // create file
-        File file = new File(outputPath);
-        file.createNewFile();
-
-        PrintWriter printWriter = new PrintWriter (file);
-        printWriter.print(outputString);
-        printWriter.close();
-
-
-
-    }
-
-
 
     /**
      * Check if the arguments are valid.
