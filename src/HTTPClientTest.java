@@ -16,7 +16,8 @@ public class HTTPClientTest {
         String[] args8 = {"HEAD", "http://people.cs.kuleuven.be/~bart.demoen/AB/index.html", "80", "1.1"};
         String[] args9 = {"GET", "http://fonafix.be/", "80", "1.1"};
         String[] args10 = {"GET", "localhost/javasockets/index.php", "80", "1.1"};
-        String[] args11 = {"GET", "http://tldp.org/", "80", "1.1"};
+        String[] args11 = {"GET", "http://tldp.org/", "80", "1.0"};
+        String[] args12 = {"GET", "http://tldp.org/", "80", "1.1"};
 
         try {
             /*HTTPClient.main(args2);
@@ -26,7 +27,7 @@ public class HTTPClientTest {
            /* HTTPClient.main(args6);
             HTTPClient.main(args7);*/
            /* HTTPClient.main(args9);*/
-           HTTPClient.main(args11);
+           HTTPClient.main(args12);
         } catch (Exception e) {
             e.printStackTrace();
         }

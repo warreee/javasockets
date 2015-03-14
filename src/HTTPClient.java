@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ class HTTPClient {
      * @param port Ususally 80
      * @param http1 True if HTTP 1.1 is used, false if HTTP 1.0 is used
      */
-    public HTTPClient(String command, URI uri, int port, boolean http1) throws IOException {
+    public HTTPClient(String command, URI uri, int port, boolean http1) throws IOException, URISyntaxException {
         String path = uri.getPath();
         String host = uri.getHost();
 
@@ -40,8 +41,9 @@ class HTTPClient {
 
     /**
      * Send a GET command.
+     * @return The response of the server.
      */
-    private void get(String host, String path, int port, boolean http1) throws IOException {
+    private byte[] get(String host, String path, int port, boolean http1) throws IOException, URISyntaxException {
         // connect to host
         Socket clientSocket = new Socket(host, port);
         // create outputstream to this host
@@ -50,13 +52,51 @@ class HTTPClient {
         DataInputStream inFromServer = new DataInputStream(clientSocket.getInputStream());
 
         // get content of requested file
-        List<String> reponse = get(host,path,outToServer,inFromServer,http1);
+        byte[] responseBytes = get(host,path,outToServer,inFromServer,http1);
+        List<String> response = getLines(get(host, path, outToServer, inFromServer, http1));
+        for (String line : response)
+            System.out.print(line);
+
+        // if HTTP 1.1 was used, then get the embedded objects in same socket connection
+        if (http1 && ! getEmbeddedObjects(getContent(response)).isEmpty()) {
+            for (String uri : getEmbeddedObjects(getContent(response))) {
+                String host2 = getHost2(host, path, uri);
+                String path2 = getPath2(path, uri);
+                if (host2.equals(host)) {
+                    // only get embedded objects on the same host
+                    // TODO: or also on other hosts? (have to make new connection for that)
+                    byte[] embeddedObjectContent = getContent(get(host2, path2, outToServer, inFromServer, http1)); // in same connection
+                    // write to file
+                    writeToFile(host2,path2,embeddedObjectContent);
+                }
+            }
+        }
+
+        clientSocket.close();
+
+        // if HTTP 1.0 was used, then get the embedded objects in new socket connection
+        if (! http1 && ! getEmbeddedObjects(getContent(response)).isEmpty()) {
+            for (String uri : getEmbeddedObjects(getContent(response))) {
+                String host2 = getHost2(host, path, uri);
+                String path2 = getPath2(path, uri);
+                if (host2.equals(host)) {
+                    // only get embedded objects on the same host
+                    // TODO: or also on other hosts?
+                    byte[] embeddedObjectContent = getContent(get(host2, path2, port, http1));
+                    // write to file
+                    writeToFile(host2,path2,embeddedObjectContent);
+                }
+            }
+        }
+
+        return responseBytes;
     }
 
     /**
      * Returns the response of a server after sending a GET request.
      */
-    private List<String> get(String host, String path, DataOutputStream outputStream, DataInputStream inputStream, boolean http1) throws IOException {
+    private byte[] get(String host, String path, DataOutputStream outputStream, DataInputStream inputStream, boolean http1) throws IOException {
+        System.out.println("**************** Requesting file: " + path + " on "+ host + " ****************");
         if (http1)
             outputStream.writeBytes("GET " + path + " HTTP/1.1\r\n" +
                     "HOST: " + host + "\r\n\r\n");
@@ -65,7 +105,7 @@ class HTTPClient {
 
         Byte responseByte;
         String line = "";
-        ArrayList<String> response = new ArrayList<>();
+        ArrayList<Byte> response = new ArrayList<>();
 
         int i=0;
         int nbBytes = Integer.MAX_VALUE; // start reading until the head part of the response ends
@@ -76,28 +116,30 @@ class HTTPClient {
             // read the next byte
             responseByte = inputStream.readByte();
 
+            // TODO: probleem met HTTP/1.0: wanneer moet de laatste byte gelezen worden???
+
             // convert byte to string
             byte[] responseBytes = new byte[1];
             responseBytes[0] = responseByte;
             String add = new String(responseBytes, "UTF-8");
 
+            // add byte to the response bytes
+            response.add(responseBytes[0]);
+
             // add string to the current line
             line += add;
 
-            // add string to the response string
-            response.add(add);
-
-            if (line.endsWith("\r\n")) {
+            if (line.endsWith("\n")) {
 
                 // if the content length was received, save it
                 if (line.startsWith("Content-Length: ")) {
-                    String nb = line.replace("Content-Length: ","").replace("\r\n","");
+                    String nb = line.replace("Content-Length: ","").replace("\n","").replace("\r","");
                     contentLength = Integer.parseInt(nb);
                 }
 
                 // when the content of the file starts,
                 // make sure we only read the next [contentLength] bytes
-                if (line.equals("\r\n") && nbBytes == Integer.MAX_VALUE) {
+                if (isEmptyLine(line) && nbBytes == Integer.MAX_VALUE) {
                     i=0;
                     nbBytes = contentLength;
                 }
@@ -109,18 +151,161 @@ class HTTPClient {
             i++;
         }
 
-        return response;
+        // convert to array
+        byte[] result = new byte[response.size()];
+        for (int j=0; j < result.length; j++)
+            result[j] = response.get(j);
+
+        return result;
+    }
+
+    private List<String> getLines(byte[] bytes) throws UnsupportedEncodingException {
+        ArrayList<String> lines = new ArrayList<>();
+        String line = "";
+        for (Byte responseByte : bytes) {
+
+            // convert byte to string
+            byte[] responseBytes = new byte[1];
+            responseBytes[0] = responseByte;
+            String add = new String(responseBytes, "UTF-8");
+
+            // add string to the current line
+            line += add;
+
+            if (line.endsWith("\n")) {
+
+                // add string to the response string
+                lines.add(line);
+                //System.out.print(line);
+
+                line = "";
+
+            }
+        }
+        return lines;
     }
 
     /**
      * Get the file content of the reponse of a server.
      */
-    private String getContent(String[] response) {
-        return null;
+    private List<String> getContent(List<String> response) {
+        ArrayList<String> result = new ArrayList<>();
+        boolean add = false;
+        for (String line : response) {
+            if (add) {
+                result.add(line);
+            }
+            else if (isEmptyLine(line)) {
+                add = true; // start adding lines after head (= after first empty line)
+            }
+        }
+        return result;
     }
 
-    private List<URI> getEmbeddedObjects(String content) {
-        return null;
+    /**
+     * Get the file content of the reponse of a server.
+     */
+    private byte[] getContent(byte[] response) throws UnsupportedEncodingException {
+        String line = "";
+        boolean addToContent = false;
+        List<Byte> contentList = new ArrayList<>();
+        for (Byte responseByte : response) {
+
+            // convert byte to string
+            byte[] responseBytes = new byte[1];
+            responseBytes[0] = responseByte;
+            String add = new String(responseBytes, "UTF-8");
+
+            // add to content
+            if (addToContent)
+                contentList.add(responseBytes[0]);
+
+            // add string to the current line
+            line += add;
+
+            if (line.endsWith("\n")) {
+
+                if (isEmptyLine(line))
+                    addToContent = true; // start adding bytes to content after first empty line
+
+                line = "";
+
+            }
+        }
+
+        // convert to array
+        byte[] result = new byte[contentList.size()];
+        for (int j=0; j < result.length; j++)
+            result[j] = contentList.get(j);
+
+        return result;
+    }
+
+    /**
+     * Get the uri's of all the embedded objects in a file.
+     */
+    private List<String> getEmbeddedObjects(List<String> content) {
+        ArrayList<String> uris = new ArrayList<>();
+        String pattern = "src=\"(.*?)\"";
+        Pattern r = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        for (String outputLine : content) {
+            Matcher m = r.matcher(outputLine);
+            while (m.find()) {
+                String uri = m.group(1);
+                uris.add(uri);
+            }
+        }
+        return uris;
+    }
+
+    private void writeToFile(String host, String path, byte[] content) throws IOException {
+        String outputDir = "downloads/" + host + path.substring(0, path.lastIndexOf("/") + 1);
+        String fileName;
+        if (path.contains("/"))
+            fileName = path.substring(path.lastIndexOf("/") + 1);
+        else
+            fileName = path;
+        String outputPath = outputDir + fileName;
+
+        // create dirs
+        new File(outputDir).mkdirs();
+
+        // create file
+        File file = new File(outputPath);
+        file.createNewFile();
+
+        FileOutputStream fos = new FileOutputStream(outputPath);
+        fos.write(content);
+        fos.close();
+
+    }
+
+    private static String getHost2(String host, String path, String uri) throws URISyntaxException {
+        if (uri.startsWith("http://") || uri.startsWith("https://")) {
+            URI uriObject = new URI(uri);
+            return uriObject.getHost();
+        }
+        else if (uri.startsWith("//")) {
+            URI uriObject = new URI("http:"+uri);
+            return uriObject.getHost();
+        }
+
+        String currentDir = path.substring(0,path.lastIndexOf("/"));
+        return host;
+    }
+
+    private static String getPath2(String path, String uri) throws URISyntaxException {
+        if (uri.startsWith("http://") || uri.startsWith("https://")) {
+            URI uriObject = new URI(uri);
+            return uriObject.getPath();
+        }
+        else if (uri.startsWith("//")) {
+            URI uriObject = new URI("http:"+uri);
+            return uriObject.getPath();
+        }
+
+        String currentDir = path.substring(0,path.lastIndexOf("/"));
+        return currentDir + "/" + uri;
     }
 
     //////////////////////////////////////////////////STATIC////////////////////////////////////////////////////////////
@@ -203,6 +388,13 @@ class HTTPClient {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Check if a line is empty.
+     */
+    private static boolean isEmptyLine(String line) {
+        return line.replace("\n","").replace("\r","").isEmpty();
     }
 
     ///////////////////////////////////////////////////POST////////////////////////////////////////////////////////////
