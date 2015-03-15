@@ -6,6 +6,12 @@
 public class HTTPClientTest {
 
     public static void main(String[] args) {
+        /**
+         * Interessante site om te testen:
+         *
+         *      http://httpbin.org/
+         *
+         */
         String[] args2 = {"HEAD", "http://www.google.be/index.html", "80", "1.0"}; // waarom krijgen we hier toch 302 voor terug?
         String[] args3 = {"HEAD", "http://www.google.com/index.html", "80", "1.0"};
         String[] args4 = {"HEAD", "http://www.fonafix.be/index.php", "80", "1.0"};
@@ -21,9 +27,11 @@ public class HTTPClientTest {
         String[] args13 = {"GET", "http://tldp.org/", "80", "1.1"};
         String[] args14 = {"GET", "http://www.linux-ip.net/", "80", "1.0"};
         String[] args15 = {"GET", "http://www.linux-ip.net/", "80", "1.1"};
+        String[] args16 = {"PUT", "http://httpbin.org/put", "80", "1.0"};
+        String[] args17 = {"PUT", "http://httpbin.org/put", "80", "1.1"};
 
         try {
-           HTTPClient.main(args15);
+           HTTPClient.main(args17);
         } catch (Exception e) {
             e.printStackTrace();
         }
