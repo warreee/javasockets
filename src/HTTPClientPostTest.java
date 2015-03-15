@@ -4,7 +4,7 @@
 public class HTTPClientPostTest {
 
     public static void main(String[] args) {
-        String[] args1 = {"POST", "http://localhost/javasockets/welcome.php", "80", "1.0"};
+        String[] args1 = {"POST", "http://httpbin.org/post", "80", "1.0"};
         String[] args2 = {"POST", "http://localhost/javasockets/welcome.php", "80", "1.1"};
         //String[] args2 = {"POST", "http://www.tweakers.net/zoeken", "80", "1.0"};
         String[] args4 = {"HEAD", "http://www.fonafix.be/index.php", "80", "1.0"};
@@ -17,7 +17,7 @@ public class HTTPClientPostTest {
         try {
 
             HTTPClient.main(args1);
-            HTTPClient.main(args2);
+            //HTTPClient.main(args2);
         } catch (Exception e) {
             e.printStackTrace();
         }

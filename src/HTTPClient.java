@@ -535,7 +535,7 @@ class HTTPClient {
     ///////////////////////////////////////////////////PUT//////////////////////////////////////////////////////////////
 
     /**
-     * Send a PUT command and print the response.
+     * Send a HEAD command and print the response.
      */
     private void put(String host, String path, int port, boolean http1) throws IOException {
         // connect to host
@@ -555,7 +555,7 @@ class HTTPClient {
         }
 
         // calculate content length
-        byte[] bytes = content.getBytes("UTF-8");
+        byte[] bytes = content.replace("\r\n","").getBytes("UTF-8");
         int contentLength = bytes.length; // number of bytes in content
 
         // Send HTTP command to server.
@@ -605,15 +605,16 @@ class HTTPClient {
         // let user enter the content to append to file
         System.out.println("Enter content to append to file, then enter empty line to end:");
         String content = ""; // content with "\r\n" at the end of each line
-        BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
         String line = "";
-        while (! (line = buffer.readLine()).equals("")) {
+        while (!(line = buffer.readLine()).equals("")) {
             content += line + "\r\n";
         }
 
         // calculate content length
         byte[] bytes = content.getBytes("UTF-8");
         int contentLength = bytes.length; // number of bytes in content
+
 
         // Send HTTP command to server.
         String request = "";
@@ -644,6 +645,7 @@ class HTTPClient {
         }
 
         clientSocket.close();
+    }
     }
 
 
@@ -685,6 +687,5 @@ class HTTPClient {
             logFile.addLine(response);
         }
     }
-    */
+*/
 
-}
