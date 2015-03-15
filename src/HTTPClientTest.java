@@ -17,18 +17,13 @@ public class HTTPClientTest {
         String[] args9 = {"GET", "http://fonafix.be/", "80", "1.1"};
         String[] args10 = {"GET", "localhost/javasockets/index.php", "80", "1.1"};
         String[] args11 = {"GET", "http://tldp.org/", "80", "1.0"};
-        String[] args12 = {"HEAD", "http://tldp.org/", "80", "1.0"};
+        String[] args12 = {"HEAD", "http://tldp.org/", "80", "1.1"};
         String[] args13 = {"GET", "http://tldp.org/", "80", "1.1"};
+        String[] args14 = {"GET", "http://www.linux-ip.net/", "80", "1.0"};
+        String[] args15 = {"GET", "http://www.linux-ip.net/", "80", "1.1"};
 
         try {
-            /*HTTPClient.main(args2);
-            HTTPClient.main(args3);*/
-           /* HTTPClient.main(args4);
-            HTTPClient.main(args5);*/
-           /* HTTPClient.main(args6);
-            HTTPClient.main(args7);*/
-           /* HTTPClient.main(args9);*/
-           HTTPClient.main(args13);
+           HTTPClient.main(args15);
         } catch (Exception e) {
             e.printStackTrace();
         }

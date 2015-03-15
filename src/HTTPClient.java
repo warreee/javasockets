@@ -77,12 +77,18 @@ class HTTPClient {
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); // buffered reader is easier here
 
         // Send HTTP command to server.
+        String request = "";
         if (http1)
-            outToServer.writeBytes("HEAD " + path + " HTTP/1.1" + "\r\n" +
-                    "HOST: " + host + "\r\n\r\n");
+            request = "HEAD " + path + " HTTP/1.1" + "\r\n" +
+                    "HOST: " + host;
         else
-            outToServer.writeBytes("HEAD " + path + " HTTP/1.0" + "\r\n\r\n");
+            request = "HEAD " + path + " HTTP/1.0";
 
+        outToServer.writeBytes(request + "\r\n\r\n");
+        System.out.println("*** Request sent: ***");
+        System.out.println(request);
+
+        System.out.println("*** Response: ***");
         // Read text from the server
         String response = "";
         while ((response = inFromServer.readLine()) != null) {
@@ -110,6 +116,7 @@ class HTTPClient {
         // get content of requested file
         byte[] responseBytes = get(host,path,outToServer,inFromServer,http1);
         List<String> response = getLines(responseBytes);
+        System.out.println("*** Response: ***");
         for (String line : response)
             System.out.print(line);
 
