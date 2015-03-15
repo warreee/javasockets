@@ -21,6 +21,99 @@ class HTTPClient {
     // TODO: log file is not really necessary...
     public static LogFile logFile = new LogFile("log.txt");
 
+    //////////////////////////////////////////////////MAIN//////////////////////////////////////////////////////////////
+
+    public static void main(String[] args) throws URISyntaxException, IOException, ClassNotFoundException {
+        // if the arguments are invalid, then print the description of how to specify the program arguments
+        if (! validArguments(args)) {
+            printHelp();
+        }
+
+        else {
+            // get arguments
+            String command = args[0];
+            String uriString = args[1];
+            String portString = args[2];
+            String version = args[3];
+
+            // get URI object from uriString
+            URI uri = getURI(uriString);
+
+            // get port int
+            int port = Integer.parseInt(portString);
+
+            boolean http1;
+            if (version.equals("1.1"))
+                http1 = true;
+            else
+                http1 = false;
+
+            // create new HTTP client
+            HTTPClient client = new HTTPClient(command,uri,port,http1);
+        }
+    }
+
+    /**
+     * Print the description of how to specify the program arguments.
+     */
+    public static void printHelp() {
+        System.out.println("The arguments that you entered were wrong.");
+        System.out.println("Use one of these commands:");
+        System.out.println("HEAD url (starting with or without http) port (usuallly 80) httpversion (1.0 or 1.1)");
+        System.out.println("GET url port httpversion");
+        System.out.println("PUT url port httpversion");
+        System.out.println("POST url port httpversion");
+    }
+
+    /**
+     * Get URI object from given URI string
+     * @param uriString String value of the given URI
+     */
+    private static URI getURI(String uriString) throws URISyntaxException {
+        if (! uriString.startsWith("http://") && ! uriString.startsWith("https://")) {
+            uriString = "http://" + uriString;
+        }
+        return new URI(uriString);
+    }
+
+    /**
+     * Check if the arguments are valid.
+     */
+    public static boolean validArguments(String[] arguments) {
+        if (arguments.length != 4)
+            return false;
+        if (! arguments[0].equals("HEAD") && ! arguments[0].equals("GET") && ! arguments[0].equals("PUT") && ! arguments[0].equals("POST"))
+            return false;
+        if (! isInteger(arguments[2]))
+            return false;
+        if (! arguments[3].equals("1.0") && ! arguments[3].equals("1.1"))
+            return false;
+        return true;
+    }
+
+    /**
+     * Check if a string is an integer.
+     */
+    private static boolean isInteger(String s) {
+        try {
+            Integer.parseInt(s);
+        } catch(NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if a line is empty.
+     */
+    private static boolean isEmptyLine(String line) {
+        return line.replace("\n","").replace("\r","").isEmpty();
+    }
+
+
+    ///////////////////////////////////////////CLIENT-OBJECT////////////////////////////////////////////////////////////
+
+
     /**
      * Map with all requested URI's (with the GET command) and the corresponding date (in String format) it was last modified.
      */
@@ -443,94 +536,7 @@ class HTTPClient {
         return currentDir + "/" + uri;
     }
 
-    //////////////////////////////////////////////////STATIC////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) throws URISyntaxException, IOException, ClassNotFoundException {
-        // if the arguments are invalid, then print the description of how to specify the program arguments
-        if (! validArguments(args)) {
-            printHelp();
-        }
-
-        else {
-            // get arguments
-            String command = args[0];
-            String uriString = args[1];
-            String portString = args[2];
-            String version = args[3];
-
-            // get URI object from uriString
-            URI uri = getURI(uriString);
-
-            // get port int
-            int port = Integer.parseInt(portString);
-
-            boolean http1;
-            if (version.equals("1.1"))
-                http1 = true;
-            else
-                http1 = false;
-
-            // create new HTTP client
-            HTTPClient client = new HTTPClient(command,uri,port,http1);
-        }
-    }
-
-    /**
-     * Print the description of how to specify the program arguments.
-     */
-    public static void printHelp() {
-        System.out.println("The arguments that you entered were wrong.");
-        System.out.println("Use one of these commands:");
-        System.out.println("HEAD url (starting with or without http) port (usuallly 80) httpversion (1.0 or 1.1)");
-        System.out.println("GET url port httpversion");
-        System.out.println("PUT url port httpversion");
-        System.out.println("POST url port httpversion");
-    }
-
-    /**
-     * Get URI object from given URI string
-     * @param uriString String value of the given URI
-     */
-    private static URI getURI(String uriString) throws URISyntaxException {
-        if (! uriString.startsWith("http://") && ! uriString.startsWith("https://")) {
-            uriString = "http://" + uriString;
-        }
-        return new URI(uriString);
-    }
-
-    /**
-     * Check if the arguments are valid.
-     */
-    public static boolean validArguments(String[] arguments) {
-        if (arguments.length != 4)
-            return false;
-        if (! arguments[0].equals("HEAD") && ! arguments[0].equals("GET") && ! arguments[0].equals("PUT") && ! arguments[0].equals("POST"))
-            return false;
-        if (! isInteger(arguments[2]))
-            return false;
-        if (! arguments[3].equals("1.0") && ! arguments[3].equals("1.1"))
-            return false;
-        return true;
-    }
-
-    /**
-     * Check if a string is an integer.
-     */
-    private static boolean isInteger(String s) {
-        try {
-            Integer.parseInt(s);
-        } catch(NumberFormatException e) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Check if a line is empty.
-     */
-    private static boolean isEmptyLine(String line) {
-        return line.replace("\n","").replace("\r","").isEmpty();
-    }
 
     ///////////////////////////////////////////////////PUT//////////////////////////////////////////////////////////////
 
@@ -647,5 +653,3 @@ class HTTPClient {
         clientSocket.close();
     }
 }
-
-
