@@ -161,6 +161,16 @@ class HTTPClient {
         fileOut.close();
     }
 
+    /**
+     * Another constructor, just for testing purposes
+     * @param host
+     * @param port
+     */
+    public HTTPClient(String host, int port) throws IOException {
+        Socket clientSocket = new Socket(host, port);
+    }
+
+
     ///////////////////////////////////////////////////HEAD////////////////////////////////////////////////////////////
 
     /**
