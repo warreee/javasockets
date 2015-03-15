@@ -17,7 +17,7 @@ public class HTTPClientTest {
         String[] args9 = {"GET", "http://fonafix.be/", "80", "1.1"};
         String[] args10 = {"GET", "localhost/javasockets/index.php", "80", "1.1"};
         String[] args11 = {"GET", "http://tldp.org/", "80", "1.0"};
-        String[] args12 = {"GET", "http://tldp.org/", "80", "1.1"};
+        String[] args12 = {"GET", "http://tldp.org/", "80", "1.0"};
 
         try {
             /*HTTPClient.main(args2);

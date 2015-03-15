@@ -53,9 +53,15 @@ class HTTPClient {
 
         // get content of requested file
         byte[] responseBytes = get(host,path,outToServer,inFromServer,http1);
-        List<String> response = getLines(get(host, path, outToServer, inFromServer, http1));
+        List<String> response = getLines(responseBytes);
         for (String line : response)
             System.out.print(line);
+
+        // save the file locally
+        String filename = path;
+        if (path.equals("/"))
+            filename = "/index.html"; // if the path is / then just assume that /index.html was requested
+        writeToFile(host,filename,getContent(responseBytes));
 
         // if HTTP 1.1 was used, then get the embedded objects in same socket connection
         if (http1 && ! getEmbeddedObjects(getContent(response)).isEmpty()) {
@@ -96,7 +102,6 @@ class HTTPClient {
      * Returns the response of a server after sending a GET request.
      */
     private byte[] get(String host, String path, DataOutputStream outputStream, DataInputStream inputStream, boolean http1) throws IOException {
-        System.out.println("**************** Requesting file: " + path + " on "+ host + " ****************");
         if (http1)
             outputStream.writeBytes("GET " + path + " HTTP/1.1\r\n" +
                     "HOST: " + host + "\r\n\r\n");
@@ -111,44 +116,53 @@ class HTTPClient {
         int nbBytes = Integer.MAX_VALUE; // start reading until the head part of the response ends
         int contentLength = 0; // the content length will be set as soon as it is received
 
-        while (i <= nbBytes) {
+        boolean stop = false;
 
-            // read the next byte
-            responseByte = inputStream.readByte();
+        while (i <= nbBytes && ! stop) {
 
-            // TODO: probleem met HTTP/1.0: wanneer moet de laatste byte gelezen worden???
+            try {
 
-            // convert byte to string
-            byte[] responseBytes = new byte[1];
-            responseBytes[0] = responseByte;
-            String add = new String(responseBytes, "UTF-8");
+                // read the next byte
+                responseByte = inputStream.readByte();
 
-            // add byte to the response bytes
-            response.add(responseBytes[0]);
+                // convert byte to string
+                byte[] responseBytes = new byte[1];
+                responseBytes[0] = responseByte;
+                String add = new String(responseBytes, "UTF-8");
 
-            // add string to the current line
-            line += add;
+                // add byte to the response bytes
+                response.add(responseBytes[0]);
 
-            if (line.endsWith("\n")) {
+                // add string to the current line
+                line += add;
 
-                // if the content length was received, save it
-                if (line.startsWith("Content-Length: ")) {
-                    String nb = line.replace("Content-Length: ","").replace("\n","").replace("\r","");
-                    contentLength = Integer.parseInt(nb);
+                if (line.endsWith("\n")) {
+
+                    // if the content length was received, save it
+                    if (line.startsWith("Content-Length: ")) {
+                        String nb = line.replace("Content-Length: ", "").replace("\n", "").replace("\r", "");
+                        contentLength = Integer.parseInt(nb);
+                    }
+
+                    // when the content of the file starts,
+                    // make sure we only read the next [contentLength] bytes
+                    if (isEmptyLine(line) && nbBytes == Integer.MAX_VALUE) {
+                        i = 0;
+                        nbBytes = contentLength;
+                    }
+
+                    //System.out.print(line);
+
+                    line = "";
+
                 }
 
-                // when the content of the file starts,
-                // make sure we only read the next [contentLength] bytes
-                if (isEmptyLine(line) && nbBytes == Integer.MAX_VALUE) {
-                    i=0;
-                    nbBytes = contentLength;
-                }
-
-                line = "";
-
+                i++;
             }
 
-            i++;
+            catch (EOFException e) {
+                stop = true; // this is necessary to stop reading when HTTP/1.0 is used
+            }
         }
 
         // convert to array
