@@ -4,7 +4,7 @@
 public class HTTPClientPutTest {
 
     public static void main(String[] args) {
-        String[] args1 = {"PUT", "http://localhost/javasockets", "80", "1.0"};
+        String[] args1 = {"PUT", "http://httpbin.org/put", "80", "1.0"};
         String[] args2 = {"POST", "http://localhost/javasockets/welcome.php", "80", "1.1"};
         //String[] args2 = {"POST", "http://www.tweakers.net/zoeken", "80", "1.0"};
         String[] args4 = {"HEAD", "http://www.fonafix.be/index.php", "80", "1.0"};
