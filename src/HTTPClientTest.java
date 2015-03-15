@@ -29,9 +29,11 @@ public class HTTPClientTest {
         String[] args15 = {"GET", "http://www.linux-ip.net/", "80", "1.1"};
         String[] args16 = {"PUT", "http://httpbin.org/put", "80", "1.0"};
         String[] args17 = {"PUT", "http://httpbin.org/put", "80", "1.1"};
+        String[] args18 = {"POST", "http://httpbin.org/post", "80", "1.0"};
+        String[] args19 = {"POST", "http://httpbin.org/post", "80", "1.1"};
 
         try {
-           HTTPClient.main(args17);
+           HTTPClient.main(args19);
         } catch (Exception e) {
             e.printStackTrace();
         }

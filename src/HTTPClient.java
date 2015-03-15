@@ -54,7 +54,9 @@ class HTTPClient {
             case "PUT":
                 put(host, path, port, http1);
                 break;
-            // TODO: complete switch when methods are done
+            case "POST":
+                post(host, path, port, http1);
+                break;
         }
 
         // save requestedURIs in file
@@ -533,7 +535,7 @@ class HTTPClient {
     ///////////////////////////////////////////////////PUT//////////////////////////////////////////////////////////////
 
     /**
-     * Send a HEAD command and print the response.
+     * Send a PUT command and print the response.
      */
     private void put(String host, String path, int port, boolean http1) throws IOException {
         // connect to host
@@ -553,7 +555,7 @@ class HTTPClient {
         }
 
         // calculate content length
-        byte[] bytes = content.replace("\r\n","").getBytes("UTF-8");
+        byte[] bytes = content.getBytes("UTF-8");
         int contentLength = bytes.length; // number of bytes in content
 
         // Send HTTP command to server.
@@ -589,9 +591,64 @@ class HTTPClient {
 
     ///////////////////////////////////////////////////POST/////////////////////////////////////////////////////////////
 
+    /**
+     * Send a POST command and print the response.
+     */
+    private void post(String host, String path, int port, boolean http1) throws IOException {
+        // connect to host
+        Socket clientSocket = new Socket(host, port);
+        // create outputstream to this host
+        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+        // create an inputstream to this host
+        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); // buffered reader is easier here
+
+        // let user enter the content to append to file
+        System.out.println("Enter content to append to file, then enter empty line to end:");
+        String content = ""; // content with "\r\n" at the end of each line
+        BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in));
+        String line = "";
+        while (! (line = buffer.readLine()).equals("")) {
+            content += line + "\r\n";
+        }
+
+        // calculate content length
+        byte[] bytes = content.getBytes("UTF-8");
+        int contentLength = bytes.length; // number of bytes in content
+
+        // Send HTTP command to server.
+        String request = "";
+        if (http1)
+            request = "POST " + path + " HTTP/1.1" + "\r\n" +
+                    "Host: " + host + "\r\n" +
+                    "Content-Length: " + contentLength + "\r\n" +
+                    "Connection: close" + "\r\n" +
+                    "" + "\r\n" +
+                    content;
+        else
+            request = "POST " + path + " HTTP/1.0" + "\r\n" +
+                    "Content-Length: " + contentLength + "\r\n" +
+                    "Connection: close" + "\r\n" +
+                    "" + "\r\n" +
+                    content;
+
+        outToServer.writeBytes(request + "\r\n");
+        System.out.println("*** Request sent: ***");
+        System.out.println(request);
+
+        System.out.println("*** Response: ***");
+        // Read text from the server
+        String response = "";
+        while ((response = inFromServer.readLine()) != null) {
+            // print response to screen
+            System.out.println(response);
+        }
+
+        clientSocket.close();
+    }
 
 
 
+/*
     private static void post(BufferedReader inFromServer, DataOutputStream outToServer, String path, String host, String version) throws Exception {
 
 
@@ -628,5 +685,6 @@ class HTTPClient {
             logFile.addLine(response);
         }
     }
+    */
 
 }
