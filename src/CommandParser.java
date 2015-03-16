@@ -3,7 +3,7 @@
  */
 public class CommandParser {
 
-    public Command parseCommand(){
+    public Command parseCommand(String command){
         return null;
     }
 
