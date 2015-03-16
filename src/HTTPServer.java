@@ -42,6 +42,10 @@ class HTTPServer extends Thread
       }
 
     } // End of main method.
+
+      public String head(String command) {
+
+      }
       @Override
       public void run()  {
           try {
