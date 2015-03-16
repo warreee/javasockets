@@ -1,76 +1,78 @@
-//Import necessary IO and NETwork libraries
 import java.io.*;
 import java.net.*;
 
-/*
- * A simple example TCP Server application
- *
- * Computer Networks, KU Leuven.
- *
- * Arne De Brabandere
- * Ward Schodts
- */
-class HTTPServer extends Thread
-  {
+class HTTPServer extends Thread {
 
-  /*
-   * Everything is included in the main method.
-   */
-  public static void main(String argv[]) throws Exception
-    {
-    // Create server (incoming) socket on port 6789.
-    ServerSocket welcomeSocket = new ServerSocket(6789);
+    private Socket connectionSocket;
+    private CommandParser parser = new CommandParser();
 
-    // Wait for a connection to be made to the server socket. 
-    while(true)
-      {
-      // Create	 a 'real' socket from the Server socket.
-      Socket connectionSocket = welcomeSocket.accept();
-  
-      // Create inputstream (convenient data reader) to this host.
-      BufferedReader inFromClient = new BufferedReader(new InputStreamReader	(connectionSocket.getInputStream()));
+    public HTTPServer(Socket connectionSocket) {
+        this.connectionSocket = connectionSocket;
+    }
 
-      // Create outputstream (convenient data writer) to this host.
-      DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+    public static void main(String args[]) throws Exception {
+        // create server (incoming) socket on port 5555
+        ServerSocket welcomeSocket = new ServerSocket(5555);
 
-      // Read text from the client, make it uppercase and write it back.
-      String clientSentence = inFromClient.readLine();
-      System.out.println("Received: " + clientSentence);
-      String capsSentence = clientSentence.toUpperCase() + '\n';
-      outToClient.writeBytes(capsSentence);
-      System.out.println("Sent: "+ capsSentence);
-      }
+        // wait for a connection to be made to the server socket
+        while(true) {
 
-    } // End of main method.
+            // create a new HTTPServer thread
+            HTTPServer thread = new HTTPServer(welcomeSocket.accept());
+            thread.run();
 
-      public String head(String command) {
+        }
+    }
 
-      }
-      @Override
-      public void run()  {
-          try {
-              ServerSocket welcomeSocket = new ServerSocket(6789);
+    @Override
+    public void run() {
 
-              // Wait for a connection to be made to the server socket.
-              while (true) {
-                  // Create	 a 'real' socket from the Server socket.
-                  Socket connectionSocket = welcomeSocket.accept();
+        try {
+            // Create inputstream (convenient data reader) to this host.
+            BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
-                  // Create inputstream (convenient data reader) to this host.
-                  BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            // Create outputstream (convenient data writer) to this host.
+            DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 
-                  // Create outputstream (convenient data writer) to this host.
-                  DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+            String line = "";
+            String commandString = "";
+            boolean stop = false;
+            while (! stop && (line = inFromClient.readLine()) != null) {
 
-                  // Read text from the client, make it uppercase and write it back.
-                  String clientSentence = inFromClient.readLine();
-                  System.out.println("Received: " + clientSentence);
-                  String capsSentence = clientSentence.toUpperCase() + '\n';
-                  outToClient.writeBytes(capsSentence);
-                  System.out.println("Sent: " + capsSentence);
-              }
-          } catch (Exception e) {
-              System.out.println(e.getMessage());
-          }
-      }
-  } // End of class HTTPServer
+                if (commandString.endsWith("\r\n\r\n")) { // TODO: nu moet ge 3 keer op enter duwen, zou maar 2 keer moeten zijn (na het ingeven van commando)
+                    System.out.println("*** Received command: ***");
+                    System.out.print(commandString);
+                    // parse command
+                    Command command = parser.parseCommand(commandString);
+                    // return response to client
+                    returnResponse(command.getResponse(), outToClient);
+                    // stop?
+                    if (command.mustClose())
+                        stop = true;
+                    commandString = "";
+                }
+
+                else {
+                    commandString += line + "\r\n";
+                }
+            }
+        }
+
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Return a response to the client.
+     */
+    public void returnResponse(String response, DataOutputStream outToClient) {
+        try {
+            outToClient.writeBytes(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+}

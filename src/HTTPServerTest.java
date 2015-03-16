@@ -12,7 +12,7 @@
  */
 public class HTTPServerTest {
 
-    public static void main(String argv[]) throws Exception {
+    /*public static void main(String argv[]) throws Exception {
         HTTPServer server = new HTTPServer();
 
         server.run();
@@ -23,6 +23,6 @@ public class HTTPServerTest {
         HTTPClient testClient = new HTTPClient(localhost, port);
 
 
-    }
+    }*/
 
 }
