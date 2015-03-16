@@ -34,12 +34,26 @@ public class CommandParser {
                 Map<String, String> info = getInfo(commandLines, 1, commandLines.length);
                 return new CommandHead(path, http1,info);
             case POST:
-
+                // Alles in lijn per lijn opsplitsen:
+                commandLines = LineString(command);
+                // De eerste lijn bevat de core info
+                param = commandLines[0].split(" ");
+                http1 = http1(param[2]);
                 break;
             case GET:
-                System.out.println();
+                // Alles in lijn per lijn opsplitsen:
+                commandLines = LineString(command);
+                // De eerste lijn bevat de core info
+                param = commandLines[0].split(" ");
+                path = param[1];
+                http1 = http1(param[2]);
             case PUT:
-                break;
+                // Alles in lijn per lijn opsplitsen:
+                commandLines = LineString(command);
+                // De eerste lijn bevat de core info
+                param = commandLines[0].split(" ");
+                path = param[1];
+                http1 = http1(param[2]);
         }
 
         return null;
