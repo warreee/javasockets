@@ -168,6 +168,7 @@ class HTTPClient {
      */
     public HTTPClient(String host, int port) throws IOException {
         Socket clientSocket = new Socket(host, port);
+        System.out.println("Connection setup successful");
     }
 
 

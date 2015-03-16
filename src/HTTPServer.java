@@ -10,7 +10,7 @@ import java.net.*;
  * Arne De Brabandere
  * Ward Schodts
  */
-class HTTPServer
+class HTTPServer extends Thread
   {
 
   /*
@@ -42,5 +42,31 @@ class HTTPServer
       }
 
     } // End of main method.
+      @Override
+      public void run()  {
+          try {
+              ServerSocket welcomeSocket = new ServerSocket(6789);
 
+              // Wait for a connection to be made to the server socket.
+              while (true) {
+                  // Create	 a 'real' socket from the Server socket.
+                  Socket connectionSocket = welcomeSocket.accept();
+
+                  // Create inputstream (convenient data reader) to this host.
+                  BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+
+                  // Create outputstream (convenient data writer) to this host.
+                  DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+
+                  // Read text from the client, make it uppercase and write it back.
+                  String clientSentence = inFromClient.readLine();
+                  System.out.println("Received: " + clientSentence);
+                  String capsSentence = clientSentence.toUpperCase() + '\n';
+                  outToClient.writeBytes(capsSentence);
+                  System.out.println("Sent: " + capsSentence);
+              }
+          } catch (Exception e) {
+              System.out.println(e.getMessage());
+          }
+      }
   } // End of class HTTPServer
