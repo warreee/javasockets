@@ -25,13 +25,15 @@ public class CommandParser {
 
         switch (getMainCommand(command)) {
             case HEAD:
+                // Alles in lijn per lijn opsplitsen:
                 String[] commandLines = LineString(command);
+                // De eerste lijn bevat de core info
                 String[] param = commandLines[0].split(" ");
                 String path = param[1];
                 boolean http1 = http1(param[2]);
-                Map<String, String> info = new HashMap<String, String>();
+                Map<String, String> info = getInfo(Arrays.copyOfRange(commandLines, 1, commandLines.length - 1));
                 String data = null;
-                return new CommandHead(path, http1,info, data);
+                return new CommandHead(path, http1,info);
             case POST:
 
                 break;
@@ -115,7 +117,15 @@ public class CommandParser {
 
     private Map<String, String> getInfo(String[] info) {
 
-        return null;
+        HashMap<String, String> infoMap = new HashMap<>();
+
+        for (String item: info){
+            String key = item.substring(0, item.indexOf(": "));
+            String value = item.substring(item.indexOf(": ") + 2);
+            infoMap.put(key, value);
+        }
+
+        return infoMap;
     }
 
 }
