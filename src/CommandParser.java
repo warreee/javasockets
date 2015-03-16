@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by warreee on 16/03/15.
  */
@@ -18,6 +21,11 @@ public class CommandParser {
 
         switch (getMainCommand(command)) {
             case HEAD:
+                String[] commandLines = LineString(command);
+                String[] param = commandLines[0].split(" ");
+                boolean http1 = http1(commandLines[2]);
+                Map<String, String> info = new HashMap<String, String>();
+                CommandHead head = new CommandHead(param[1], param[2], http1,info);
                 break;
             case POST:
                 break;
@@ -74,6 +82,24 @@ public class CommandParser {
                 return MainCommand.PUT;
         }
         return null;
+    }
+
+    /**
+     *
+     * @param command
+     * @return
+     */
+    private String[] LineString(String command) {
+        String[] lines = command.split("\\r?\\n");
+        return lines;
+    }
+
+    private boolean http1(String http1){
+        if (http1.equalsIgnoreCase("HTTP/1.1")){
+           return true;
+        } else {
+            return false;
+        }
     }
 
 }
