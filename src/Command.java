@@ -37,7 +37,7 @@ public abstract class Command {
         if (! http1)
             return false;
         else
-            return info.containsKey("host"); // TODO: ook controleren of info.get("Host") == [hostnaam] ??
+            return ! info.containsKey("host"); // TODO: ook controleren of info.get("Host") == [hostnaam] ??
     }
 
     protected String getCurrentDate() {

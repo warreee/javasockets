@@ -120,7 +120,7 @@ public class CommandParser {
 
         HashMap<String, String> infoMap = new HashMap<>();
 
-        if (info.length > 1) {
+        if (info.length > 0) {
 
             for (String item : info) {
                 String key = item.substring(0, item.indexOf(": ")).toLowerCase();
