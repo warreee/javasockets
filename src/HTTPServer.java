@@ -34,12 +34,19 @@ class HTTPServer extends Thread {
             // Create outputstream (convenient data writer) to this host.
             DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 
-            String line = "";
             String commandString = "";
             boolean stop = false;
-            while (! stop && (line = inFromClient.readLine()) != null) {
+            while (! stop) {
 
-                if (commandString.endsWith("\r\n\r\n")) { // TODO: nu moet ge 3 keer op enter duwen, zou maar 2 keer moeten zijn (na het ingeven van commando)
+                String line = inFromClient.readLine();
+
+                if (line == null) {
+                    stop = true;
+                }
+
+                else if (! commandString.replace("\r","").replace("\n","").isEmpty()
+                        && ! parser.continueReading(commandString)) {
+
                     System.out.println("*** Received command: ***");
                     System.out.print(commandString);
                     // parse command
@@ -50,11 +57,13 @@ class HTTPServer extends Thread {
                     if (command.mustClose())
                         stop = true;
                     commandString = "";
+
                 }
 
                 else {
                     commandString += line + "\r\n";
                 }
+
             }
         }
 
