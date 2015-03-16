@@ -31,11 +31,7 @@ public class CommandParser {
                 String[] param = commandLines[0].split(" ");
                 String path = param[1];
                 boolean http1 = http1(param[2]);
-                Map<String, String> info = null;
-                if (commandLines.length > 1) {
-                    info = getInfo(Arrays.copyOfRange(commandLines, 1, commandLines.length - 1));
-                }
-                String data = null;
+                Map<String, String> info = getInfo(commandLines, 1, commandLines.length -1);
                 return new CommandHead(path, http1,info);
             case POST:
 
@@ -118,14 +114,19 @@ public class CommandParser {
         return StringUtils.join(strList, "\r\n");
     }
 
-    private Map<String, String> getInfo(String[] info) {
+    private Map<String, String> getInfo(String[] info, int startIndex, int endIndex) {
+
+        info = Arrays.copyOfRange(info, startIndex, endIndex);
 
         HashMap<String, String> infoMap = new HashMap<>();
 
-        for (String item: info){
-            String key = item.substring(0, item.indexOf(": ")).toLowerCase();
-            String value = item.substring(item.indexOf(": ") + 2);
-            infoMap.put(key, value);
+        if (info.length > 1) {
+
+            for (String item : info) {
+                String key = item.substring(0, item.indexOf(": ")).toLowerCase();
+                String value = item.substring(item.indexOf(": ") + 2);
+                infoMap.put(key, value);
+            }
         }
 
         return infoMap;
