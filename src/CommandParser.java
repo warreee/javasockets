@@ -1,4 +1,4 @@
-import com.sun.deploy.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,7 +31,10 @@ public class CommandParser {
                 String[] param = commandLines[0].split(" ");
                 String path = param[1];
                 boolean http1 = http1(param[2]);
-                Map<String, String> info = getInfo(Arrays.copyOfRange(commandLines, 1, commandLines.length - 1));
+                Map<String, String> info = null;
+                if (commandLines.length > 1) {
+                    info = getInfo(Arrays.copyOfRange(commandLines, 1, commandLines.length - 1));
+                }
                 String data = null;
                 return new CommandHead(path, http1,info);
             case POST:
