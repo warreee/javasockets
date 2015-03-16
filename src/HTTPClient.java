@@ -127,12 +127,12 @@ class HTTPClient {
      * @param http1 True if HTTP 1.1 is used, false if HTTP 1.0 is used
      */
     public HTTPClient(String command, URI uri, int port, boolean http1) throws IOException, URISyntaxException, ClassNotFoundException {
-        // load requestedURIs from file
+        /*/ load requestedURIs from file
         FileInputStream fileIn = new FileInputStream("requested.log");
         ObjectInputStream in = new ObjectInputStream(fileIn);
         requestedURIs = (HashMap<String,String>) in.readObject();
         in.close();
-        fileIn.close();
+        fileIn.close();*/
 
         String path = uri.getPath();
         String host = uri.getHost();
