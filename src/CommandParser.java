@@ -23,11 +23,14 @@ public class CommandParser {
             case HEAD:
                 String[] commandLines = LineString(command);
                 String[] param = commandLines[0].split(" ");
+                String path = param[1];
                 boolean http1 = http1(commandLines[2]);
                 Map<String, String> info = new HashMap<String, String>();
-                CommandHead head = new CommandHead(param[1], param[2], http1,info);
+                String data = null;
+                CommandHead head = new CommandHead(path, http1,info, data);
                 break;
             case POST:
+
                 break;
             case GET:
                 System.out.println();
@@ -100,6 +103,10 @@ public class CommandParser {
         } else {
             return false;
         }
+    }
+
+    private String getData(String[] data) {
+        return null;
     }
 
 }
