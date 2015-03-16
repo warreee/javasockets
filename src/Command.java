@@ -20,5 +20,7 @@ public abstract class Command {
 
     public abstract String getResponse();
 
+    public abstract boolean mustClose();
+
 
 }
