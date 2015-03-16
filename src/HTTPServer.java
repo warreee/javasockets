@@ -11,8 +11,8 @@ class HTTPServer extends Thread {
     }
 
     public static void main(String args[]) throws Exception {
-        // create server (incoming) socket on port 5555
-        ServerSocket welcomeSocket = new ServerSocket(5555);
+        // create server (incoming) socket on port 6789
+        ServerSocket welcomeSocket = new ServerSocket(6789);
 
         // wait for a connection to be made to the server socket
         while(true) {
