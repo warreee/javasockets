@@ -35,7 +35,7 @@ public abstract class Command {
 
     protected boolean isBadRequest() {
         if (! http1)
-            return false;
+            return false; // TODO
         else
             return ! info.containsKey("host"); // TODO: ook controleren of info.get("Host") == [hostnaam] ??
     }

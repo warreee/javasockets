@@ -127,12 +127,12 @@ class HTTPClient {
      * @param http1 True if HTTP 1.1 is used, false if HTTP 1.0 is used
      */
     public HTTPClient(String command, URI uri, int port, boolean http1) throws IOException, URISyntaxException, ClassNotFoundException {
-        /*/ load requestedURIs from file
+        // load requestedURIs from file
         FileInputStream fileIn = new FileInputStream("requested.log");
         ObjectInputStream in = new ObjectInputStream(fileIn);
         requestedURIs = (HashMap<String,String>) in.readObject();
         in.close();
-        fileIn.close();*/
+        fileIn.close();
 
         String path = uri.getPath();
         String host = uri.getHost();
@@ -290,6 +290,7 @@ class HTTPClient {
         }
 
         outputStream.writeBytes(request + "\r\n\r\n");
+
         System.out.println("*** Request sent: ***");
         System.out.println(request);
 
@@ -361,7 +362,7 @@ class HTTPClient {
                 i++;
             }
 
-            catch (EOFException e) {
+            catch (EOFException e) { // TODO: BAD PRACTICE
                 stop = true; // this is necessary to stop reading when HTTP/1.0 is used
             }
 
@@ -394,6 +395,12 @@ class HTTPClient {
         return result;
     }
 
+    /**
+     * Returns a string version of a byte array.
+     * @param bytes
+     * @return
+     * @throws UnsupportedEncodingException
+     */
     private List<String> getLines(byte[] bytes) throws UnsupportedEncodingException {
         ArrayList<String> lines = new ArrayList<>();
         String line = "";
