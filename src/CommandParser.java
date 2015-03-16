@@ -31,7 +31,7 @@ public class CommandParser {
                 String[] param = commandLines[0].split(" ");
                 String path = param[1];
                 boolean http1 = http1(param[2]);
-                Map<String, String> info = getInfo(commandLines, 1, commandLines.length -1);
+                Map<String, String> info = getInfo(commandLines, 1, commandLines.length);
                 return new CommandHead(path, http1,info);
             case POST:
 
