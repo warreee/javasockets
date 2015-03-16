@@ -123,7 +123,7 @@ public class CommandParser {
         HashMap<String, String> infoMap = new HashMap<>();
 
         for (String item: info){
-            String key = item.substring(0, item.indexOf(": "));
+            String key = item.substring(0, item.indexOf(": ")).toLowerCase();
             String value = item.substring(item.indexOf(": ") + 2);
             infoMap.put(key, value);
         }
