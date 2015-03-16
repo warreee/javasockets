@@ -1,6 +1,12 @@
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Created by warreee on 16/03/15.
@@ -12,6 +18,7 @@ public abstract class Command {
     protected Map<String, String> info;
     protected String data;
 
+    protected boolean mustClose = false;
 
     public Command(String path, boolean http1, Map<String, String> info, String data) {
         this.data = data;
@@ -22,7 +29,9 @@ public abstract class Command {
 
     public abstract String getResponse();
 
-    public abstract boolean mustClose();
+    public boolean mustClose() {
+        return this.mustClose;
+    }
 
     protected boolean isBadRequest() {
         if (http1)
@@ -32,9 +41,21 @@ public abstract class Command {
     }
 
     protected String getCurrentDate() {
-        Calendar calendar = Calendar.getInstance();
+        TimeZone timeZone = TimeZone.getTimeZone("Europe/Brussels");
+        Locale locale = new Locale("en", "GB");
+        Calendar calendar = Calendar.getInstance(timeZone, locale);
         SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
         return format.format(calendar.getTime());
+    }
+
+    protected long getNbBytes(String string) {
+        byte[] byteArray = string.getBytes();
+        return byteArray.length;
+    }
+
+    protected String readFile(String path, Charset encoding) throws IOException {
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        return new String(encoded, encoding);
     }
 
 }
