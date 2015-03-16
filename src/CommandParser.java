@@ -1,4 +1,8 @@
+import com.sun.deploy.util.StringUtils;
+
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,11 +28,10 @@ public class CommandParser {
                 String[] commandLines = LineString(command);
                 String[] param = commandLines[0].split(" ");
                 String path = param[1];
-                boolean http1 = http1(commandLines[2]);
+                boolean http1 = http1(param[2]);
                 Map<String, String> info = new HashMap<String, String>();
                 String data = null;
-                CommandHead head = new CommandHead(path, http1,info, data);
-                break;
+                return new CommandHead(path, http1,info, data);
             case POST:
 
                 break;
@@ -67,7 +70,7 @@ public class CommandParser {
      * @return
      */
     private MainCommand getMainCommand(String command){
-        String mainCommand = command.substring(command.indexOf(" "));
+        String mainCommand = command.substring(0, command.indexOf(" "));
 
         switch (mainCommand){
             case "HEAD":
@@ -106,6 +109,12 @@ public class CommandParser {
     }
 
     private String getData(String[] data) {
+        List<String> strList = Arrays.asList(data);
+        return StringUtils.join(strList, "\r\n");
+    }
+
+    private Map<String, String> getInfo(String[] info) {
+
         return null;
     }
 
