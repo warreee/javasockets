@@ -44,7 +44,7 @@ class HTTPServer extends Thread {
                     stop = true;
                 }
 
-                else if (! commandString.replace("\r","").replace("\n","").isEmpty()
+                else if (! commandString.replace("\r","").replace("\n","").isEmpty() && line.isEmpty()
                         && ! parser.continueReading(commandString)) {
 
                     System.out.println("*** Received command: ***");
@@ -65,6 +65,8 @@ class HTTPServer extends Thread {
                 }
 
             }
+
+            connectionSocket.close();
         }
 
         catch (IOException e) {

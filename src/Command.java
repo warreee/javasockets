@@ -34,15 +34,15 @@ public abstract class Command {
     }
 
     protected boolean isBadRequest() {
-        if (http1)
-            return true;
+        if (! http1)
+            return false;
         else
             return info.containsKey("host"); // TODO: ook controleren of info.get("Host") == [hostnaam] ??
     }
 
     protected String getCurrentDate() {
         TimeZone timeZone = TimeZone.getTimeZone("Europe/Brussels");
-        Locale locale = new Locale("en", "GB");
+        Locale locale = new Locale("en", "US");
         Calendar calendar = Calendar.getInstance(timeZone, locale);
         SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
         return format.format(calendar.getTime());

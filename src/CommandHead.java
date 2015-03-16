@@ -31,31 +31,36 @@ public class CommandHead extends Command {
 
         // REST OF THE RESPONSE
 
+        String currentDate = getCurrentDate();
+
         if (isBadRequest()) { // Bad Request
             // STATUS
             response += "400 Bad Request\r\n";
             // DATE
-            response += "Date: " + getCurrentDate() + "\r\n";
+            response += "Date: " + currentDate + "\r\n";
         }
 
         else {
 
             try { // OK
-                File file = new File(this.path);
+                File file = new File("www"+this.path);
+                String contentType = Files.probeContentType(file.toPath());
+                long nbBytes = getNbBytes(readFile(file.getPath(), StandardCharsets.UTF_8));
+
                 // STATUS
                 response += "200 OK\r\n";
                 // DATE
-                response += "Date: " + getCurrentDate() + "\r\n";
+                response += "Date: " + currentDate + "\r\n";
                 // CONTENT-TYPE
-                response += "Content-Type: " + Files.probeContentType(file.toPath())+"\r\n";
+                response += "Content-Type: " + contentType +"\r\n";
                 // CONTENT-LENGTH
-                response += "Content-Length: " + getNbBytes(readFile(path, StandardCharsets.UTF_8));
+                response += "Content-Length: " + nbBytes +"\r\n";
             }
 
             catch (IOException e) { // Not Found
                 response += "404 Not Found\r\n";
                 // DATE
-                response += "Date: " + getCurrentDate() + "\r\n";
+                response += "Date: " + currentDate + "\r\n";
             }
 
         }
