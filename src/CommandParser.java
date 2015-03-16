@@ -8,9 +8,18 @@ public class CommandParser {
         String mainCommand = command.substring(command.indexOf(" "));
 
         switch (mainCommand){
-            case "HEAD": break;
-            case "GET": break;
-            case "POST": break;
+            case "HEAD":
+                command = command.substring(4, command.length() - 1); //Removes mainCommand
+                break;
+            case "GET":
+                command = command.substring(3, command.length() - 1); //Removes mainCommand
+                break;
+            case "POST":
+                command = command.substring(4, command.length() - 1); //Removes mainCommand
+                break;
+            case "PUT":
+                command = command.substring(3, command.length() - 1); //Removes mainCommand
+                break;
         }
         return null;
     }
