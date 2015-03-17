@@ -16,30 +16,39 @@ public class CommandParser {
 
     }
 
-
-
     public Command parseCommand(String command){
 
-
-        MainCommand mainCommand;
+        String[] commandLines;
+        String[] param;
+        String path;
+        boolean http1;
+        int emptyLineNumber;
+        Map<String, String> info;
+        String data;
 
         switch (getMainCommand(command)) {
             case HEAD:
                 // Alles in lijn per lijn opsplitsen:
-                String[] commandLines = LineString(command);
+                commandLines = LineString(command);
                 // De eerste lijn bevat de core info
-                String[] param = commandLines[0].split(" ");
-                String path = param[1];
-                boolean http1 = http1(param[2]);
-                Map<String, String> info = getInfo(commandLines, 1, commandLines.length);
+                param = commandLines[0].split(" ");
+                path = param[1];
+                http1 = http1(param[2]);
+                info = getInfo(commandLines, 1, commandLines.length);
                 return new CommandHead(path, http1,info);
             case POST:
                 // Alles in lijn per lijn opsplitsen:
                 commandLines = LineString(command);
                 // De eerste lijn bevat de core info
                 param = commandLines[0].split(" ");
+                path = param[1];
                 http1 = http1(param[2]);
-                break;
+                // Zoek de lege lijn na de info headers
+                emptyLineNumber = getEmptyLineNumber(commandLines);
+                info = getInfo(commandLines, 1, emptyLineNumber - 1);
+                // Data teruggeven als 1 grote string
+                data = getData(commandLines, emptyLineNumber + 1, commandLines.length - 1);
+                return new CommandPost(path, http1, info, data);
             case GET:
                 // Alles in lijn per lijn opsplitsen:
                 commandLines = LineString(command);
@@ -47,6 +56,8 @@ public class CommandParser {
                 param = commandLines[0].split(" ");
                 path = param[1];
                 http1 = http1(param[2]);
+                info = getInfo(commandLines, 1, commandLines.length -1);
+                return new CommandGet(path, http1, info);
             case PUT:
                 // Alles in lijn per lijn opsplitsen:
                 commandLines = LineString(command);
@@ -54,9 +65,32 @@ public class CommandParser {
                 param = commandLines[0].split(" ");
                 path = param[1];
                 http1 = http1(param[2]);
+                // Zoek de lege lijn na de info headers
+                emptyLineNumber = getEmptyLineNumber(commandLines);
+                info = getInfo(commandLines, 1, emptyLineNumber - 1);
+                // Data teruggeven als 1 grote string
+                data = getData(commandLines, emptyLineNumber + 1, commandLines.length - 1);
+                return new CommandPut(path, http1, info, data);
         }
 
         return null;
+    }
+
+    /**
+     * Geeft de het lijnnummer terug van de lege lijn na de info headers.
+     * @param emptyLines
+     * @return
+     */
+    private int getEmptyLineNumber(String[] emptyLines) {
+
+        int emptyLine = -1;
+
+        for (int i = 0; i < emptyLines.length; i++){
+            if(emptyLines[i].equals("")){
+                emptyLine = i;
+            }
+        }
+        return emptyLine;
     }
 
     /**
@@ -123,7 +157,8 @@ public class CommandParser {
         }
     }
 
-    private String getData(String[] data) {
+    private String getData(String[] data, int startIndex, int endIndex) {
+        data = Arrays.copyOfRange(data, startIndex, endIndex);
         List<String> strList = Arrays.asList(data);
         return StringUtils.join(strList, "\r\n");
     }
