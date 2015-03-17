@@ -44,24 +44,32 @@ class HTTPServer extends Thread {
                     stop = true;
                 }
 
-                else if (! commandString.replace("\r","").replace("\n","").isEmpty() && line.isEmpty()
-                        && ! parser.continueReading(commandString)) {
-
-                    System.out.println("*** Received command: ***");
-                    System.out.print(commandString);
-                    // parse command
-                    Command command = parser.parseCommand(commandString);
-                    // return response to client
-                    returnResponse(command.getResponse(), outToClient);
-                    // stop?
-                    if (command.mustClose())
-                        stop = true;
-                    commandString = "";
-
-                }
-
                 else {
-                    commandString += line + "\r\n";
+
+                    if (!(commandString.replace("\r", "").replace("\n", "").isEmpty() && line.isEmpty())) {
+                        // add the read line to commandString
+                        commandString += line + "\r\n";
+                    }
+
+
+                    if (!commandString.replace("\r", "").replace("\n", "").isEmpty()
+                            && !parser.continueReading(commandString)) {
+
+                        // parse command and return response
+
+                        System.out.println("*** Received command: ***");
+                        System.out.print(commandString);
+                        // parse command
+                        Command command = parser.parseCommand(commandString);
+                        // return response to client
+                        returnResponse(command.getResponse(), outToClient);
+                        // stop?
+                        if (command.mustClose())
+                            stop = true;
+                        commandString = "";
+
+                    }
+
                 }
 
             }
