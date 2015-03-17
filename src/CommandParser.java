@@ -16,6 +16,9 @@ public class CommandParser {
 
     }
 
+    /**
+     * @return command object of given command string
+     */
     public Command parseCommand(String command){
 
         String[] commandLines;
@@ -45,9 +48,9 @@ public class CommandParser {
                 http1 = http1(param[2]);
                 // Zoek de lege lijn na de info headers
                 emptyLineNumber = getEmptyLineNumber(commandLines);
-                info = getInfo(commandLines, 1, emptyLineNumber - 1);
+                info = getInfo(commandLines, 1, emptyLineNumber/* - 1*/);
                 // Data teruggeven als 1 grote string
-                data = getData(commandLines, emptyLineNumber + 1, commandLines.length - 1);
+                data = getData(commandLines, emptyLineNumber + 1, commandLines.length/* - 1*/);
                 return new CommandPost(path, http1, info, data);
             case GET:
                 // Alles in lijn per lijn opsplitsen:
@@ -56,7 +59,7 @@ public class CommandParser {
                 param = commandLines[0].split(" ");
                 path = param[1];
                 http1 = http1(param[2]);
-                info = getInfo(commandLines, 1, commandLines.length -1);
+                info = getInfo(commandLines, 1, commandLines.length/* -1*/);
                 return new CommandGet(path, http1, info);
             case PUT:
                 // Alles in lijn per lijn opsplitsen:
@@ -67,9 +70,9 @@ public class CommandParser {
                 http1 = http1(param[2]);
                 // Zoek de lege lijn na de info headers
                 emptyLineNumber = getEmptyLineNumber(commandLines);
-                info = getInfo(commandLines, 1, emptyLineNumber - 1);
+                info = getInfo(commandLines, 1, emptyLineNumber/* - 1*/);
                 // Data teruggeven als 1 grote string
-                data = getData(commandLines, emptyLineNumber + 1, commandLines.length - 1);
+                data = getData(commandLines, emptyLineNumber + 1, commandLines.length/* - 1*/);
                 return new CommandPut(path, http1, info, data);
         }
 
@@ -78,8 +81,6 @@ public class CommandParser {
 
     /**
      * Geeft de het lijnnummer terug van de lege lijn na de info headers.
-     * @param emptyLines
-     * @return
      */
     private int getEmptyLineNumber(String[] emptyLines) {
 
@@ -88,21 +89,22 @@ public class CommandParser {
         for (int i = 0; i < emptyLines.length; i++){
             if(emptyLines[i].equals("")){
                 emptyLine = i;
+                break;
             }
         }
         return emptyLine;
     }
 
     /**
-     * Returns false if its a GET or HEAD request, is used to see if we need to continue read the input stream.
-     * @param command
-     * @return
+     * Returns true if the server has to continue reading the command:
+     *  - for HEAD and GET: as long as no empty line is received
+     *  - for PUT and POST: as long as the data is not received
      */
     public boolean continueReading(String command){
         if (getMainCommand(command).equals(MainCommand.GET) || getMainCommand(command).equals(MainCommand.HEAD)){
-            return false;
+            return getEmptyLineNumber(LineString(command)) == -1;
         } else {
-            return true;
+            return ! dataReceived(command);
         }
     }
 
@@ -123,32 +125,33 @@ public class CommandParser {
 
         switch (mainCommand){
             case "HEAD":
-                command = command.substring(4, command.length() - 1); //Removes mainCommand
-                System.out.println(command);
+                //command = command.substring(4, command.length() - 1); //Removes mainCommand
+                //System.out.println(command);
                 return MainCommand.HEAD;
             case "GET":
-                command = command.substring(3, command.length() - 1); //Removes mainCommand
+                //command = command.substring(3, command.length() - 1); //Removes mainCommand
                 return MainCommand.GET;
             case "POST":
-                command = command.substring(4, command.length() - 1); //Removes mainCommand
+                //command = command.substring(4, command.length() - 1); //Removes mainCommand
                 return MainCommand.POST;
             case "PUT":
-                command = command.substring(3, command.length() - 1); //Removes mainCommand
+                //command = command.substring(3, command.length() - 1); //Removes mainCommand
                 return MainCommand.PUT;
         }
         return null;
     }
 
     /**
-     *
-     * @param command
-     * @return
+     * Command string to array of lines
      */
     private String[] LineString(String command) {
         String[] lines = command.split("\\r?\\n");
         return lines;
     }
 
+    /**
+     * true if HTTP/1.1 is used
+     */
     private boolean http1(String http1){
         if (http1.equalsIgnoreCase("HTTP/1.1")){
            return true;
@@ -163,6 +166,9 @@ public class CommandParser {
         return StringUtils.join(strList, "\r\n");
     }
 
+    /**
+     * Get the info map ("Key: value")
+     */
     private Map<String, String> getInfo(String[] info, int startIndex, int endIndex) {
 
         info = Arrays.copyOfRange(info, startIndex, endIndex);
@@ -179,6 +185,29 @@ public class CommandParser {
         }
 
         return infoMap;
+    }
+
+    /**
+     * Check if the data is received (for a PUT or POST command)
+     */
+    private boolean dataReceived(String command) {
+        // Alles in lijn per lijn opsplitsen:
+        String[] commandLines = LineString(command);
+        // Zoek de lege lijn na de info headers
+        int emptyLineNumber = getEmptyLineNumber(commandLines);
+        if (emptyLineNumber == -1) { // info headers not received yet...
+            return false;
+        }
+        else {
+            Map<String, String> info = getInfo(commandLines, 1, emptyLineNumber);
+            // Content-Length opvragen
+            int contentLength = Integer.parseInt(info.get("content-length"));
+            // Data teruggeven als 1 grote string
+            String data = getData(commandLines, emptyLineNumber + 1, commandLines.length);
+            // bereken aantal bytes in data
+            int nbBytes = data.getBytes().length;
+            return nbBytes >= contentLength;
+        }
     }
 
 }
