@@ -102,7 +102,7 @@ public class CommandParser {
      */
     public boolean continueReading(String command){
         if (getMainCommand(command).equals(MainCommand.GET) || getMainCommand(command).equals(MainCommand.HEAD)){
-            return getEmptyLineNumber(LineString(command)) == -1;
+            return ! command.endsWith("\r\n\r\n");
         } else {
             return ! dataReceived(command);
         }

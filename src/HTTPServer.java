@@ -46,7 +46,7 @@ class HTTPServer extends Thread {
 
                 else {
 
-                    if (!(commandString.replace("\r", "").replace("\n", "").isEmpty() && line.isEmpty())) {
+                    if (! (commandString.replace("\r", "").replace("\n", "").isEmpty() && line.isEmpty()) ) {
                         // add the read line to commandString
                         commandString += line + "\r\n";
                     }
