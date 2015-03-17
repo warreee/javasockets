@@ -44,6 +44,7 @@ public class CommandGet extends Command {
                 File file = new File("www"+this.path);
                 String contentType = Files.probeContentType(file.toPath());
                 long nbBytes = getNbBytes(readFile(file.getPath(), StandardCharsets.UTF_8));
+                String fileContent = readFile(file.getPath(), StandardCharsets.UTF_8);
 
                 // STATUS
                 response += "200 OK\r\n";
@@ -53,6 +54,9 @@ public class CommandGet extends Command {
                 response += "Content-Type: " + contentType +"\r\n";
                 // CONTENT-LENGTH
                 response += "Content-Length: " + nbBytes +"\r\n";
+                // CONTENT
+                response += "\r\n";
+                response += fileContent;
             }
 
             catch (IOException e) { // Not Found
