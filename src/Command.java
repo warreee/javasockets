@@ -41,10 +41,9 @@ public abstract class Command {
     }
 
     protected String getCurrentDate() {
-        TimeZone timeZone = TimeZone.getTimeZone("Europe/Brussels");
-        Locale locale = new Locale("en", "US");
-        Calendar calendar = Calendar.getInstance(timeZone, locale);
-        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
         return format.format(calendar.getTime());
     }
 
