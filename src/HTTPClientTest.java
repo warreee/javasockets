@@ -33,7 +33,7 @@ public class HTTPClientTest {
         String[] args19 = {"POST", "http://httpbin.org/post", "80", "1.1"};
 
         try {
-           HTTPClient.main(args19);
+           HTTPClient.main(args15);
         } catch (Exception e) {
             e.printStackTrace();
         }
