@@ -185,7 +185,7 @@ class HTTPClient {
         for (String line : response)
             System.out.print(line);
         // also store the response file locally
-        if (! path.isEmpty())
+        if (! path.equals("/"))
             Helpers.writeToFile(host, path, Helpers.getContent(responseBytes));
         else
             Helpers.writeToFile(host, "/index.html", Helpers.getContent(responseBytes));
@@ -193,8 +193,8 @@ class HTTPClient {
         // if HTTP 1.1 was used, then get the embedded objects in the *same* socket connection
         if (http1 && ! Helpers.getEmbeddedObjects(Helpers.getContent(response)).isEmpty()) {
             for (String uri : Helpers.getEmbeddedObjects(Helpers.getContent(response))) {
-                String host2 = Helpers.getHost2(host, path, uri);
-                String path2 = Helpers.getPath2(path, uri);
+                String host2 = Helpers.getSubHost(host, path, uri);
+                String path2 = Helpers.getSubPath(path, uri);
                 if (host2.equals(host)) {
                     // only get embedded objects on the same host
                     byte[] embeddedObjectContent = Helpers.getContent(getResponseBytes(host2, path2, outToServer, inFromServer, http1)); // in same connection
@@ -210,8 +210,8 @@ class HTTPClient {
         // if HTTP 1.0 was used, then get the embedded objects in a *new* socket connection
         if (! http1 && ! Helpers.getEmbeddedObjects(Helpers.getContent(response)).isEmpty()) {
             for (String uri : Helpers.getEmbeddedObjects(Helpers.getContent(response))) {
-                String host2 = Helpers.getHost2(host, path, uri);
-                String path2 = Helpers.getPath2(path, uri);
+                String host2 = Helpers.getSubHost(host, path, uri);
+                String path2 = Helpers.getSubPath(path, uri);
                 if (host2.equals(host)) {
                     // only get embedded objects on the same host
                     byte[] embeddedObjectContent = Helpers.getContent(get(host2, path2, port, http1));

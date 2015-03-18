@@ -44,7 +44,7 @@ public class Helpers {
     /**
      * Returns the host of a uri that was read from a page
      */
-    static String getHost2(String host, String path, String uri) throws URISyntaxException {
+    static String getSubHost(String host, String path, String uri) throws URISyntaxException {
         if (uri.startsWith("http://") || uri.startsWith("https://")) {
             URI uriObject = new URI(uri);
             return uriObject.getHost();
@@ -61,7 +61,7 @@ public class Helpers {
     /**
      * Returns the path of a uri that was read from a page
      */
-    static String getPath2(String path, String uri) throws URISyntaxException {
+    static String getSubPath(String path, String uri) throws URISyntaxException {
         if (uri.startsWith("http://") || uri.startsWith("https://")) {
             URI uriObject = new URI(uri);
             return uriObject.getPath();

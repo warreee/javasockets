@@ -16,7 +16,7 @@ public class CommandPut extends Command {
     public byte[] getResponse() {
         Response response = new Response();
 
-        // HTTP 1.1 or 1.0, and must close after this request?
+        // HTTP 1.1 or 1.0, and must close after this request
         if (http1) {
             response.addString("HTTP/1.1 ");
             if (info.containsKey("connection") && info.get("connection").equalsIgnoreCase("close"))

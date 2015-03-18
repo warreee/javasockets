@@ -1,4 +1,6 @@
-import org.apache.commons.lang.StringUtils;
+
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,7 +39,7 @@ public class CommandParser {
                 param = commandLines[0].split(" ");
                 path = param[1];
                 http1 = http1(param[2]);
-                info = getInfo(commandLines, 1, commandLines.length);
+                info = getInfo(commandLines, 1, commandLines.length -1);
                 return new CommandHead(path, http1,info);
             case POST:
                 // Alles in lijn per lijn opsplitsen:
@@ -59,7 +61,7 @@ public class CommandParser {
                 param = commandLines[0].split(" ");
                 path = param[1];
                 http1 = http1(param[2]);
-                info = getInfo(commandLines, 1, commandLines.length/* -1*/);
+                info = getInfo(commandLines, 1, commandLines.length - 1/* -1*/);
                 return new CommandGet(path, http1, info);
             case PUT:
                 // Alles in lijn per lijn opsplitsen:

@@ -45,13 +45,13 @@ class HTTPServer extends Thread {
                 }
 
                 else {
-
+                    // lege lijn ingelezen als eerste, dus niks toevoegen aan het commando
                     if (! (commandString.replace("\r", "").replace("\n", "").isEmpty() && line.isEmpty()) ) {
                         // add the read line to commandString
                         commandString += line + "\r\n";
                     }
 
-
+                    // commando is niet leeg en de parser gaat het kunnen gaan parsen
                     if (!commandString.replace("\r", "").replace("\n", "").isEmpty()
                             && !parser.continueReading(commandString)) {
 
