@@ -27,7 +27,7 @@ public abstract class Command {
         this.info = info;
     }
 
-    public abstract String getResponse();
+    public abstract byte[] getResponse();
 
     public boolean mustClose() {
         return this.mustClose;
@@ -48,14 +48,8 @@ public abstract class Command {
         return format.format(calendar.getTime());
     }
 
-    protected long getNbBytes(String string) {
-        byte[] byteArray = string.getBytes();
-        return byteArray.length;
-    }
-
-    protected String readFile(String path, Charset encoding) throws IOException {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, encoding);
+    protected byte[] readFile(String path) throws IOException {
+        return Files.readAllBytes(Paths.get(path));
     }
 
 }

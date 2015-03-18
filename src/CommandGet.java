@@ -13,17 +13,17 @@ public class CommandGet extends Command {
     }
 
     @Override
-    public String getResponse() {
-        String response = "";
+    public byte[] getResponse() {
+        Response response = new Response();
 
         // HTTP 1.1 or 1.0, and must close after this request?
         if (http1) {
-            response = "HTTP/1.1 ";
+            response.addString("HTTP/1.1 ");
             if (info.containsKey("connection") && info.get("connection").equalsIgnoreCase("close"))
                 this.mustClose = true;
         }
         else {
-            response = "HTTP/1.0 ";
+            response.addString("HTTP/1.0 ");
             this.mustClose = true;
         }
 
@@ -33,9 +33,9 @@ public class CommandGet extends Command {
 
         if (isBadRequest()) { // Bad Request
             // STATUS
-            response += "400 Bad Request\r\n";
+            response.addString("400 Bad Request\r\n");
             // DATE
-            response += "Date: " + currentDate + "\r\n";
+            response.addString("Date: " + currentDate + "\r\n");
         }
 
         else {
@@ -43,32 +43,32 @@ public class CommandGet extends Command {
             try { // OK
                 File file = new File("www"+this.path);
                 String contentType = Files.probeContentType(file.toPath());
-                long nbBytes = getNbBytes(readFile(file.getPath(), StandardCharsets.UTF_8));
-                String fileContent = readFile(file.getPath(), StandardCharsets.UTF_8);
+                long nbBytes = readFile(file.getPath()).length;
+                byte[] fileContent = readFile(file.getPath());
 
                 // STATUS
-                response += "200 OK\r\n";
+                response.addString("200 OK\r\n");
                 // DATE
-                response += "Date: " + currentDate + "\r\n";
+                response.addString("Date: " + currentDate + "\r\n");
                 // CONTENT-TYPE
-                response += "Content-Type: " + contentType +"\r\n";
+                response.addString("Content-Type: " + contentType +"\r\n");
                 // CONTENT-LENGTH
-                response += "Content-Length: " + nbBytes +"\r\n";
+                response.addString("Content-Length: " + nbBytes +"\r\n");
                 // CONTENT
-                response += "\r\n";
-                response += fileContent;
+                response.addString("\r\n");
+                response.addBytes(fileContent);
             }
 
             catch (IOException e) { // Not Found
-                response += "404 Not Found\r\n";
+                response.addString("404 Not Found\r\n");
                 // DATE
-                response += "Date: " + currentDate + "\r\n";
+                response.addString("Date: " + currentDate + "\r\n");
             }
 
         }
 
 
-        return response;
+        return response.getByteArray();
     }
 
     @Override

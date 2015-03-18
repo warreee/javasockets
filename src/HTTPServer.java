@@ -63,6 +63,10 @@ class HTTPServer extends Thread {
                         Command command = parser.parseCommand(commandString);
                         // return response to client
                         returnResponse(command.getResponse(), outToClient);
+
+                        System.out.println("*** Returned this to the client: ***");
+                        System.out.println(new String(command.getResponse()));
+
                         // stop?
                         if (command.mustClose())
                             stop = true;
@@ -86,9 +90,9 @@ class HTTPServer extends Thread {
     /**
      * Return a response to the client.
      */
-    public void returnResponse(String response, DataOutputStream outToClient) {
+    public void returnResponse(byte[] response, DataOutputStream outToClient) {
         try {
-            outToClient.writeBytes(response);
+            outToClient.write(response);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -9,7 +9,7 @@ public class CommandPost extends Command {
     }
 
     @Override
-    public String getResponse() {
+    public byte[] getResponse() {
         return null;
     }
 
