@@ -39,6 +39,7 @@ public class CommandPut extends Command {
         }
 
         else if (! info.containsKey("content-length")) { // Content-Length not specified, so write nothing to file
+                                                         // but still return a response like a GET request
             try {
                 File file = new File("www" + this.path);
                 String contentType = Files.probeContentType(file.toPath());

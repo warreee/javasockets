@@ -373,14 +373,13 @@ class HTTPClient {
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); // buffered reader is easier here
 
         // let user enter the file content
-        System.out.println("Enter file content, then enter empty line to end:");
+        System.out.println("Enter file content, then enter . to end:");
         String content = ""; // content with "\r\n" at the end of each line
         BufferedReader buffer=new BufferedReader(new InputStreamReader(System.in));
         String line = "";
-        while (! (line = buffer.readLine()).equals("")) {
+        while (! (line = buffer.readLine()).equals(".")) {
             content += line + "\r\n";
         }
-        content = content.substring(0,content.length()-2); // delete last \r\n from content
 
         // calculate content length
         byte[] bytes = content.getBytes("UTF-8");
@@ -394,13 +393,13 @@ class HTTPClient {
                     "Content-Length: " + contentLength + "\r\n" +
                     "Connection: close" + "\r\n" +
                     "" + "\r\n" +
-                    content;
+                    content+"\r\n";
         else
             request = "PUT " + path + " HTTP/1.0" + "\r\n" +
                     "Content-Length: " + contentLength + "\r\n" +
                     "Connection: close" + "\r\n" +
                     "" + "\r\n" +
-                    content;
+                    content+"\r\n";
 
         // print request
         outToServer.writeBytes(request + "\r\n");
@@ -433,11 +432,11 @@ class HTTPClient {
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); // buffered reader is easier here
 
         // let user enter the content to append to file
-        System.out.println("Enter content to append to file, then enter empty line to end:");
+        System.out.println("Enter content to append to file, then enter . to end:");
         String content = ""; // content with "\r\n" at the end of each line
         BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
         String line = "";
-        while (!(line = buffer.readLine()).equals("")) {
+        while (!(line = buffer.readLine()).equals(".")) {
             content += line + "\r\n";
         }
 
@@ -454,13 +453,13 @@ class HTTPClient {
                     "Content-Length: " + contentLength + "\r\n" +
                     "Connection: close" + "\r\n" +
                     "" + "\r\n" +
-                    content;
+                    content+"\r\n";
         else
             request = "POST " + path + " HTTP/1.0" + "\r\n" +
                     "Content-Length: " + contentLength + "\r\n" +
                     "Connection: close" + "\r\n" +
                     "" + "\r\n" +
-                    content;
+                    content+"\r\n";
 
         // print request
         outToServer.writeBytes(request + "\r\n");

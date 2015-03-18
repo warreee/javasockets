@@ -145,8 +145,19 @@ public class CommandParser {
      * Command string to array of lines
      */
     private String[] LineString(String command) {
-        String[] lines = command.split("\\r?\\n");
-        return lines;
+        String[] lines = command.split("\\r\\n");
+
+        // fix: add empty lines at end of command
+        int nbLines = StringUtils.countMatches(command, "\r\n");
+        String[] result = new String[nbLines];
+        for (int i=0; i<nbLines; i++) {
+            if (i<lines.length)
+                result[i] = lines[i];
+            else
+                result[i] = "";
+        }
+
+        return result;
     }
 
     /**

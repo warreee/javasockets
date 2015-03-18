@@ -9,7 +9,7 @@ public class HTTPClientPostTest {
 
         try {
 
-            HTTPClient.main(args1);
+            HTTPClient.main(args2);
 
         } catch (Exception e) {
             e.printStackTrace();

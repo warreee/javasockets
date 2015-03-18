@@ -1,6 +1,4 @@
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -70,10 +68,19 @@ public abstract class Command {
         if (file.exists())
             file.delete();
 
-        FileOutputStream fos = new FileOutputStream(path);
-        fos.write(content);
-        fos.close();
+        FileOutputStream outputStream = new FileOutputStream(path);
+        outputStream.write(content);
+        outputStream.close();
 
+    }
+
+    /**
+     * Append bytes to existing file
+     */
+    protected void appendToFile(String path, byte[] content) throws IOException {
+        File file = new File(path);
+        FileOutputStream outputStream = new FileOutputStream(file, true); // append = true
+        outputStream.write(content);
     }
 
 }

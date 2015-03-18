@@ -62,10 +62,11 @@ class HTTPServer extends Thread {
                         // parse command
                         Command command = parser.parseCommand(commandString);
                         // return response to client
-                        returnResponse(command.getResponse(), outToClient);
+                        byte[] responseBytes = command.getResponse();
+                        returnResponse(responseBytes, outToClient);
 
                         System.out.println("*** Returned this to the client: ***");
-                        System.out.println(new String(command.getResponse()));
+                        System.out.println(new String(responseBytes));
 
                         // stop?
                         if (command.mustClose())
