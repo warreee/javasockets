@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -49,6 +51,29 @@ public abstract class Command {
 
     protected byte[] readFile(String path) throws IOException {
         return Files.readAllBytes(Paths.get(path));
+    }
+
+    /**
+     * Write bytes to file (overwrite file)
+     */
+    protected void writeToFile(String path, byte[] content) throws IOException {
+
+        // create dirs
+        File dir = (new File(path)).getParentFile();
+        dir.mkdirs();
+
+        // create file
+        File file = new File(path);
+        file.createNewFile();
+
+        // first delete file if it exists
+        if (file.exists())
+            file.delete();
+
+        FileOutputStream fos = new FileOutputStream(path);
+        fos.write(content);
+        fos.close();
+
     }
 
 }

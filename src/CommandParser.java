@@ -200,7 +200,9 @@ public class CommandParser {
         }
         else {
             Map<String, String> info = getInfo(commandLines, 1, emptyLineNumber);
-            // Content-Length opvragen
+            // Content-Length opvragen (als die nog niet gegeven is ==> "dataReceived")
+            if (! info.containsKey("content-length"))
+                return true;
             int contentLength = Integer.parseInt(info.get("content-length"));
             // Data teruggeven als 1 grote string
             String data = getData(commandLines, emptyLineNumber + 1, commandLines.length);

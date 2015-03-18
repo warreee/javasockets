@@ -1,3 +1,6 @@
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Map;
 
 /**
@@ -10,11 +13,6 @@ public class CommandPost extends Command {
 
     @Override
     public byte[] getResponse() {
-        return null;
-    }
-
-    @Override
-    public boolean mustClose() {
-        return true;
+        return null; // TODO
     }
 }
