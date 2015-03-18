@@ -184,6 +184,11 @@ class HTTPClient {
         System.out.println("*** Response: ***");
         for (String line : response)
             System.out.print(line);
+        // also store the response file locally
+        if (! path.isEmpty())
+            Helpers.writeToFile(host, path, Helpers.getContent(responseBytes));
+        else
+            Helpers.writeToFile(host, "/index.html", Helpers.getContent(responseBytes));
 
         // if HTTP 1.1 was used, then get the embedded objects in the *same* socket connection
         if (http1 && ! Helpers.getEmbeddedObjects(Helpers.getContent(response)).isEmpty()) {
@@ -375,9 +380,10 @@ class HTTPClient {
         while (! (line = buffer.readLine()).equals("")) {
             content += line + "\r\n";
         }
+        content = content.substring(0,content.length()-2); // delete last \r\n from content
 
         // calculate content length
-        byte[] bytes = content.replace("\r\n","").getBytes("UTF-8");
+        byte[] bytes = content.getBytes("UTF-8");
         int contentLength = bytes.length; // number of bytes in content
 
         // Send HTTP command to server.
